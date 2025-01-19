@@ -2,6 +2,9 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <ctime>
+
+
 
 class Enemy
 {
@@ -93,7 +96,7 @@ public:
         return hpShape;
     }
 
-    int enemyValue() {
+    int enemyValue() const {
         return value;
     }
 
@@ -112,50 +115,116 @@ private:
 };
 
 class Turret {
+
 public:
-    Turret(int damage, float fireDelay, int pointsCount, sf::Color hullColor, sf::Color shotColor,float aoeSize, int cost)
-    : damage(damage), fireDelay(fireDelay), pointsCount(pointsCount), hullColor(hullColor), shotColor(shotColor), cost(cost), aoeSize(aoeSize) {
+    Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range)
+        : location(location), damage(damage), fireDelay(1/shotsPerSec), pointsCount(pointsCount), hullColor(hullColor), shotColor(shotColor), cost(cost), aoeSize(aoeSize), range(range) {
+        shot.setPrimitiveType(sf::PrimitiveType::LineStrip);
+        shot.resize(2);
         hull.setPointCount(pointsCount);
         hull.setFillColor(hullColor);
         hull.setRadius(20.0f);
-
-
+        hull.setOrigin(hull.getGeometricCenter());
+        hull.setPosition(location);
+        rangeDraw.setRadius(range);
+        rangeDraw.setOrigin(rangeDraw.getGeometricCenter());
+        rangeDraw.setOutlineColor(sf::Color::White);
+        rangeDraw.setOutlineThickness(2.0f);
+        rangeDraw.setPosition(location);
+        rangeDraw.setFillColor(sf::Color::Transparent);
+        
+        shot[0].position = location;
+        shot[0].color = shotColor;
+        shot[1].color = shotColor;
+        shot[1].position = location;
     }
 
-    Turret(int damage, float fireDelay, int pointsCount, sf::Color hullColor, sf::Color shotColor, int cost, int ammo, float reloadDelay, float aoeSize)
-        : damage(damage), fireDelay(fireDelay), pointsCount(pointsCount), ammo(ammo), reloadDelay(reloadDelay), hullColor(hullColor), shotColor(shotColor), cost(cost), aoeSize(aoeSize) {
+    Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range, int ammo, float reloadDelay )
+        : damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), ammo(ammo), reloadDelay(reloadDelay), hullColor(hullColor), shotColor(shotColor), cost(cost), aoeSize(aoeSize), range(range) {
+        shot.setPrimitiveType(sf::PrimitiveType::LineStrip);
+        shot.resize(2);
         hull.setPointCount(pointsCount);
         hull.setFillColor(hullColor);
         hull.setRadius(20.0f);
+        hull.setOrigin(hull.getGeometricCenter());
+        hull.setPosition(location);
+        rangeDraw.setRadius(range);
+        rangeDraw.setOrigin(rangeDraw.getGeometricCenter());
+        rangeDraw.setOutlineColor(sf::Color::White);
+        rangeDraw.setOutlineThickness(2.0f);
 
+        shot[0].color = shotColor;
+        shot[1].color = shotColor;
+        shot[0].position = location;
+        shot[1].position = location;
 
     }
 
-    void shoot(sf::Time deltaTime){
+    void shoot(sf::Time deltaTime, std::vector<Enemy>& enemies){
+        if (lastShot >= fireDelay) {
+            int closestEnemy = -1;
+            float currentShortDist = range + 1;
+            int counter = 0;
+            for (auto it = enemies.begin(); it != enemies.end();) {
 
+                sf::Vector2f currentPosition = hull.getPosition();
+                sf::Vector2f targetPosition = it->currentPos();
+                sf::Vector2f direction = targetPosition - currentPosition;
+                float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
+                if (!(distance >= range) && distance < currentShortDist) {
+                    currentShortDist = distance;
+                    closestEnemy = counter; 
+                }
+                counter++;
+                it++;   
+                
+            }
+            if (currentShortDist <= range && !(closestEnemy == -1) ) {
+                enemies[closestEnemy].updateHp(damage, 0);
+                lastShot = 0;
+                shot[1].position = enemies[closestEnemy].currentPos();
+                
+
+            }
+
+        }
+        lastShot += deltaTime.asSeconds();
     }
 
-    void ammoShoot(sf::Time deltaTime) {
-
+    const sf::CircleShape& getHull() const {
+        return hull;
     }
 
+    const sf::CircleShape& getRange() const {
+        return rangeDraw;
+    }
+    
+    const sf::VertexArray& getShot() const {
+        return shot;
+    }
 
+    const float& getShotTime() const {
+        return lastShot;
+    }
 
 private:
     //Turret Stats
         int damage;
         float fireDelay;
-        float lastShot = 0;
+        float lastShot = -1;
         int pointsCount;
-        int ammo = 0;
+        int ammo = -1;
         float reloadDelay = 0;
         int cost;
         float aoeSize;
+        float range;
     //Rendering Data
+        sf::CircleShape rangeDraw;
         sf::CircleShape hull;
         sf::Color hullColor;
-        sf::RectangleShape shot;
+        sf::VertexArray shot;
         sf::Color shotColor;
+        sf::Vector2f location;
 
 
 };
@@ -164,14 +233,14 @@ private:
 class Wave {
 public:
 
-
+    
     //Class Data
     Wave() {
 
     }
 
     void updateInfo(sf::Time deltaTime) {
-
+        
         if (enemyCount == 0) {
             if (counter >= 2) {
                 waveId++;
@@ -186,9 +255,15 @@ public:
 
     }
     void spawnEnemies(sf::Time deltaTime, std::vector<Enemy>& enemies, int& count, const std::vector<sf::Vector2f>& waypoints) {
-
+        int enemyType = (rand() % 2) + 1;
         if (!(count >= enemyCount) && spawnDelay <= 0) {
-            enemies.emplace_back(waypoints, 100, 100, 25, 1); // speed = 100 pixels per second
+            if (enemyType == 2) {
+                enemies.emplace_back(waypoints, 300, 25, 15, 1); //Fast Guy
+            }
+            else {
+                enemies.emplace_back(waypoints, 100, 100, 25, 1); //Base Enemy
+            }
+            
             count++;
             spawnDelay = 1 / sqrt(waveId);
         }
@@ -244,6 +319,7 @@ void attackHandle(bool& drawAttack, sf::Vector2i& attackLocationInt, sf::CircleS
 
 int main()
 {
+    std::srand(time(0));
     Wave waves;
     sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Tower Defense Game");
     window.setVerticalSyncEnabled(true); // Enable V-Sync
@@ -301,12 +377,14 @@ int main()
 
     // Create a list of enemies
     std::vector<Enemy> enemies;
+    //Create a list of Turrets
+    std::vector<Turret> turrets;
     // Variables to control which half to update
     //Total Enemy Count
     int count = 0;
     //Spawn Delay
     float spawn = 0;
-
+    bool buffer = false;
     
 
     // Main game loop
@@ -336,14 +414,29 @@ int main()
                         
                     }
                 }
+
+                
                 
             }
 
            
         }
-        
-        
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1) && buffer == false) {
+            sf::Vector2f mousePos;
+            mousePos.x = sf::Mouse::getPosition(window).x;
+            mousePos.y = sf::Mouse::getPosition(window).y;
+            turrets.push_back(Turret(mousePos, 10, 5.0f, 3, sf::Color::Red, sf::Color::Blue, 0.0f, 1, 200.0f));
+            buffer = true;
+        }
+        else if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1))) {
+            buffer = false;
+        }
 
+        for (auto turret = turrets.begin(); turret != turrets.end();) {
+            turret->shoot(deltaTime, enemies);
+            turret++;
+        }
+        
         // Check if any enemy has reached the end of the path and remove them
         for (auto it = enemies.begin(); it != enemies.end();)
         {
@@ -366,6 +459,8 @@ int main()
                 ++it; // Move to the next enemy
             }
         }
+
+        
 
         waves.spawnEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
@@ -394,6 +489,16 @@ int main()
             window.draw(enemy.getBody());
             window.draw(enemy.getHpBar());
         }
+        //Draw Turrets
+        for (const auto& turret : turrets) {
+            window.draw(turret.getHull());
+            window.draw(turret.getRange());
+            if (turret.getShotTime() <= .05) {
+                window.draw(turret.getShot());
+            }
+            
+        }
+
         // Display what was drawn
         window.display();
     }
