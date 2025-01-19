@@ -1,0 +1,206 @@
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include <cmath>
+#include <queue>
+
+class Enemy
+{
+public:
+    Enemy(const std::vector<sf::Vector2f>& path, float speed)
+        : path(path), speed(speed), currentTargetIndex(1), active(true)
+    {
+        shape.setRadius(20.f);
+        shape.setFillColor(sf::Color::Red);
+        shape.setPosition(path[0]);
+    }
+
+    void update(sf::Time deltaTime)
+    {
+        if (!active) return;
+
+        if (currentTargetIndex < path.size())
+        {
+            sf::Vector2f currentPosition = shape.getPosition();
+            sf::Vector2f targetPosition = path[currentTargetIndex];
+            sf::Vector2f direction = targetPosition - currentPosition;
+            float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+            if (distance != 0)
+                direction /= distance;
+
+            if (distance > speed * deltaTime.asSeconds())
+            {
+                shape.move(direction * speed * deltaTime.asSeconds());
+            }
+            else
+            {
+                shape.setPosition(targetPosition); // Snap to the target position if close enough
+                ++currentTargetIndex; // Move to the next target
+            }
+        }
+
+        if (currentTargetIndex >= path.size())
+        {
+            active = false; // Mark as inactive if reached the end
+        }
+    }
+
+    void reset()
+    {
+        currentTargetIndex = 1;
+        active = true;
+        shape.setPosition(path[0]);
+    }
+
+    bool isActive() const
+    {
+        return active;
+    }
+
+    const sf::CircleShape& getShape() const
+    {
+        return shape;
+    }
+
+private:
+    sf::CircleShape shape;
+    std::vector<sf::Vector2f> path;
+    float speed;
+    std::size_t currentTargetIndex;
+    bool active;
+};
+
+class EnemyPool
+{
+public:
+    EnemyPool(const std::vector<sf::Vector2f>& path, float speed, std::size_t poolSize)
+        : path(path), speed(speed)
+    {
+        for (std::size_t i = 0; i < poolSize; ++i)
+        {
+            enemies.push(new Enemy(path, speed));
+        }
+    }
+
+    ~EnemyPool()
+    {
+        while (!enemies.empty())
+        {
+            delete enemies.front();
+            enemies.pop();
+        }
+    }
+
+    Enemy* getEnemy()
+    {
+        if (enemies.empty()) return nullptr;
+
+        Enemy* enemy = enemies.front();
+        enemies.pop();
+        enemy->reset();
+        return enemy;
+    }
+
+    void returnEnemy(Enemy* enemy)
+    {
+        enemies.push(enemy);
+    }
+
+private:
+    std::queue<Enemy*> enemies;
+    std::vector<sf::Vector2f> path;
+    float speed;
+};
+
+int main()
+{
+    sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Tower Defense Game");
+    window.setVerticalSyncEnabled(true); // Enable V-Sync
+
+    // Define waypoints for the path
+    std::vector<sf::Vector2f> waypoints = {
+        {0.f, 0.f},
+        {200.f, 300.f},
+        {400.f, 600.f},
+        {800.f, 600.f},
+        {1000.f, 300.f},
+        {1200.f, 100.f},
+        {1600.f, 300.f},
+        {1920.f, 1080.f}
+    };
+
+    // Create a vertex array for the path
+    sf::VertexArray line(sf::LineStrip, waypoints.size());
+    for (std::size_t i = 0; i < waypoints.size(); ++i)
+    {
+        line[i].position = waypoints[i];
+        line[i].color = sf::Color::Green;
+    }
+
+    // Create an enemy pool
+    EnemyPool enemyPool(waypoints, 100.f, 100); // poolSize = 100
+
+    // Create a list of active enemies
+    std::vector<Enemy*> activeEnemies;
+
+    // Main game loop
+    sf::Clock clock; // to track time for consistent movement
+    while (window.isOpen())
+    {
+        // Time since last frame
+        sf::Time deltaTime = clock.restart();
+
+        // Process events
+        while (auto event = window.pollEvent())
+        {
+            if (event.has_value())
+            {
+                if (event->is<sf::Event::Closed>())
+                    window.close();
+            }
+        }
+
+        // Spawn new enemies for demonstration
+        if (activeEnemies.size() < 50)
+        {
+            Enemy* newEnemy = enemyPool.getEnemy();
+            if (newEnemy)
+            {
+                activeEnemies.push_back(newEnemy);
+            }
+        }
+
+        // Update each active enemy and return to pool if it has reached the end
+        for (auto it = activeEnemies.begin(); it != activeEnemies.end();)
+        {
+            (*it)->update(deltaTime);
+
+            if (!(*it)->isActive())
+            {
+                enemyPool.returnEnemy(*it);
+                it = activeEnemies.erase(it); // Remove the enemy from the list
+            }
+            else
+            {
+                ++it; // Move to the next enemy
+            }
+        }
+
+        // Clear the screen
+        window.clear();
+
+        // Draw the path
+        window.draw(line);
+
+        // Draw the active enemies
+        for (const auto& enemy : activeEnemies)
+        {
+            window.draw(enemy->getShape());
+        }
+
+        // Display what was drawn
+        window.display();
+    }
+
+    return 0;
+}
