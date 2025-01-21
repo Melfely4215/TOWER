@@ -11,11 +11,11 @@ class Enemy
 public:
 
     //Class Data
-    Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value)
-        : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value)
+    Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value, sf::Color color)
+        : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value), color(color)
     {
         shape.setRadius(size);
-        shape.setFillColor(sf::Color::White);
+        shape.setFillColor(color);
         shape.setOrigin(shape.getGeometricCenter());
         shape.setPosition(path[0]);
         currentHp = hp;
@@ -109,6 +109,7 @@ private:
     sf::RectangleShape hpShape; //Object used to render HP Bar
     sf::CircleShape shape; //Object used to render body
     std::vector<sf::Vector2f> path;
+    sf::Color color;
     float speed; //Speed of Enemy
     std::size_t currentTargetIndex;
     float size; //Size of Enemy
@@ -138,6 +139,12 @@ public:
         rangeDraw.setOutlineThickness(2.0f);
         rangeDraw.setPosition(location);
         rangeDraw.setFillColor(sf::Color::Transparent);
+        shotAoe.setFillColor(sf::Color::Transparent);
+        shotAoe.setRadius(aoeSize);
+        shotAoe.setOutlineColor(shotColor);
+        shotAoe.setOutlineThickness(2.0f);
+        shotAoe.setOrigin(shotAoe.getGeometricCenter());
+        shotAoe.setPosition(sf::Vector2f(-200, -200));
         
         shot[0].position = location;
         shot[0].color = shotColor;
@@ -173,11 +180,14 @@ public:
             int counter = 0;
             float longDistanceTravl = 0;
             for (auto it = enemies.begin(); it != enemies.end();) {
-
+                
+                
                 sf::Vector2f currentPosition = hull.getPosition();
                 sf::Vector2f targetPosition = it->currentPos();
                 sf::Vector2f direction = targetPosition - currentPosition;
                 float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
+               
+                
                 if (!(distance >= range) && it->distanced_Traveled() > longDistanceTravl) {
                     currentBestDist = distance;
                     longDistanceTravl = it->distanced_Traveled();
@@ -188,12 +198,34 @@ public:
                 
             }
             if (currentBestDist <= range && !(bestEnemy == -1) ) {
-                enemies[bestEnemy].updateHp(damage, 0);
                 lastShot = 0;
-                shot[1].position = enemies[bestEnemy].currentPos();
-                
+                sf::Vector2f enemyLocation = enemies[bestEnemy].currentPos();
+                shot[1].position = enemyLocation;
+                shotAoe.setPosition(enemyLocation);
+                if (aoeSize > 0) {
+                    
+                    static std::array<sf::Vector2f, 2> attackArea;
+
+                    attackArea[0] = sf::Vector2f(enemyLocation.x - aoeSize*1.5, enemyLocation.y - aoeSize*1.5);
+                    attackArea[1] = sf::Vector2f(enemyLocation.x + aoeSize*1.5, enemyLocation.y + aoeSize*1.5);
+
+                    for (auto it = enemies.begin(); it != enemies.end();) {
+                        sf::Vector2f enemyPos = it->currentPos();
+                        if (enemyPos.x >= attackArea[0].x && enemyPos.y >= attackArea[0].y && enemyPos.x <= attackArea[1].x && enemyPos.y <= attackArea[1].y) {
+                            it->updateHp(damage, 0);
+                            it++;
+                        }
+                        else {
+                            it++;
+                        }
+                    }
+                }
+                else {
+                    enemies[bestEnemy].updateHp(damage, 0);
+                }
 
             }
+            
 
         }
         lastShot += deltaTime.asSeconds();
@@ -209,6 +241,10 @@ public:
     
     const sf::VertexArray& getShot() const {
         return shot;
+    }
+
+    const sf::CircleShape& getShotAoe() const {
+        return shotAoe;
     }
 
     const float& getShotTime() const {
@@ -234,7 +270,7 @@ private:
         sf::VertexArray shot;
         sf::Color shotColor;
         sf::Vector2f location;
-
+        sf::CircleShape shotAoe; 
 
 };
 
@@ -253,7 +289,7 @@ public:
         if (enemyCount == 0) {
             if (counter >= 2) {
                 waveId++;
-                enemyCap = enemyCap + waveId * 2;
+                enemyCap = enemyCap + waveId *.5;
                 enemyCount = enemyCap;
                 counter = 0;
             }
@@ -268,10 +304,10 @@ public:
         int enemyType = (rand() % 2) + 1;
         if (!(count >= enemyCount) && spawnDelay <= 0) {
             if (enemyType == 2) {
-                enemies.emplace_back(waypoints, 300, 25, 15, 1); //Fast Guy
+                enemies.emplace_back(waypoints, 300, 25, 15, 1, sf::Color::Blue); //Fast Guy
             }
             else {
-                enemies.emplace_back(waypoints, 100, 100, 25, 1); //Base Enemy
+                enemies.emplace_back(waypoints, 100, 100, 25, 1, sf::Color::White); //Base Enemy
             }
             
             count++;
@@ -313,8 +349,8 @@ void attackHandle(bool& drawAttack, sf::Vector2i& attackLocationInt, sf::CircleS
        
         attackCircle.setPosition(attackLocation);
     
-        attackArea[0] = sf::Vector2f(attackCircle.getPosition().x - attackCircle.getRadius()*2, attackCircle.getPosition().y - attackCircle.getRadius()*2);
-        attackArea[1] = sf::Vector2f(attackCircle.getPosition().x + attackCircle.getRadius()*2, attackCircle.getPosition().y + attackCircle.getRadius()*2);
+        attackArea[0] = sf::Vector2f(attackCircle.getPosition().x - attackCircle.getRadius()*1.5, attackCircle.getPosition().y - attackCircle.getRadius()*1.5);
+        attackArea[1] = sf::Vector2f(attackCircle.getPosition().x + attackCircle.getRadius()*1.5, attackCircle.getPosition().y + attackCircle.getRadius()*1.5);
 
         for (auto it = enemies.begin(); it != enemies.end();) {
             enemyPos = it->currentPos();
@@ -436,7 +472,7 @@ int main()
             sf::Vector2f mousePos;
             mousePos.x = sf::Mouse::getPosition(window).x;
             mousePos.y = sf::Mouse::getPosition(window).y;
-            turrets.push_back(Turret(mousePos, 10, 5.0f, 3, sf::Color::Red, sf::Color::Blue, 0.0f, 1, 200.0f));
+            turrets.push_back(Turret(mousePos, 25, 5.0f, 3, sf::Color::Red, sf::Color::Blue, 0.0f, 1, 200.0f));
             buffer = true;
         }
         else if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1))) {
@@ -506,6 +542,7 @@ int main()
             window.draw(turret.getRange());
             if (turret.getShotTime() <= .05) {
                 window.draw(turret.getShot());
+                window.draw(turret.getShotAoe());
             }
             
         }
