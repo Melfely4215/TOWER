@@ -41,6 +41,7 @@ public:
             {
                 direction /= distance;
                 shape.move(direction * speed * deltaTime.asSeconds());
+                distanceTravl += speed * deltaTime.asSeconds();
             }
             else
             {
@@ -60,6 +61,10 @@ public:
 
     sf::Vector2f currentPos() {
         return shape.getPosition();
+    }
+
+    float distanced_Traveled() {
+        return distanceTravl;
     }
 
     void updateHp(float damage, float heal) {
@@ -112,6 +117,7 @@ private:
     float hpPer = 1; //HP Percent
     float currentHp;
     int value;
+    float distanceTravl = 0; 
 };
 
 class Turret {
@@ -162,27 +168,29 @@ public:
 
     void shoot(sf::Time deltaTime, std::vector<Enemy>& enemies){
         if (lastShot >= fireDelay) {
-            int closestEnemy = -1;
-            float currentShortDist = range + 1;
+            int bestEnemy = -1;
+            float currentBestDist = range + 1;
             int counter = 0;
+            float longDistanceTravl = 0;
             for (auto it = enemies.begin(); it != enemies.end();) {
 
                 sf::Vector2f currentPosition = hull.getPosition();
                 sf::Vector2f targetPosition = it->currentPos();
                 sf::Vector2f direction = targetPosition - currentPosition;
                 float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
-                if (!(distance >= range) && distance < currentShortDist) {
-                    currentShortDist = distance;
-                    closestEnemy = counter; 
+                if (!(distance >= range) && it->distanced_Traveled() > longDistanceTravl) {
+                    currentBestDist = distance;
+                    longDistanceTravl = it->distanced_Traveled();
+                    bestEnemy = counter; 
                 }
                 counter++;
                 it++;   
                 
             }
-            if (currentShortDist <= range && !(closestEnemy == -1) ) {
-                enemies[closestEnemy].updateHp(damage, 0);
+            if (currentBestDist <= range && !(bestEnemy == -1) ) {
+                enemies[bestEnemy].updateHp(damage, 0);
                 lastShot = 0;
-                shot[1].position = enemies[closestEnemy].currentPos();
+                shot[1].position = enemies[bestEnemy].currentPos();
                 
 
             }
@@ -218,6 +226,7 @@ private:
         int cost;
         float aoeSize;
         float range;
+        
     //Rendering Data
         sf::CircleShape rangeDraw;
         sf::CircleShape hull;
@@ -244,7 +253,8 @@ public:
         if (enemyCount == 0) {
             if (counter >= 2) {
                 waveId++;
-                enemyCount = enemyCount + waveId * 2;
+                enemyCap = enemyCap + waveId * 2;
+                enemyCount = enemyCap;
                 counter = 0;
             }
             else {
@@ -285,6 +295,7 @@ public:
 
 private:
     //Variables
+    int enemyCap = 2;
     int enemyCount = 2;
     int waveId = 1;
     float counter = 0;
@@ -332,8 +343,8 @@ int main()
         {windowSize.x * 0.90f, windowSize.y * 0.10f},
         {windowSize.x * 0.90f, windowSize.y * 0.30f},
         {windowSize.x * 0.10f, windowSize.y * 0.30f},
-        {windowSize.x * 0.10f, windowSize.y * 0.60f},
-        {windowSize.x * 1.0f, windowSize.y * 0.60f},
+        {windowSize.x * 0.10f, windowSize.y * 0.80f},
+        {windowSize.x * 1.0f, windowSize.y * 0.80f},
         
     };
 
