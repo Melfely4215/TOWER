@@ -7,6 +7,19 @@
 #include "turret.h"
 #include "wave.h"
 
+//struct turret_Type {
+//    int damage;
+//    float shotsPerSec;
+//    int pointsCount;
+//    sf::Color hullColor;
+//    sf::Color shotColor;
+//    float aoeSize;
+//    int cost;
+//    float range;
+//    int ammo = -1;
+//    float reloadDelay = 0;
+//};
+
 void attackHandle(bool& drawAttack, sf::Vector2i& attackLocationInt, sf::CircleShape& attackCircle, std::vector<Enemy>& enemies) {
     //variables
         static std::array<sf::Vector2f, 2> attackArea;
@@ -32,54 +45,136 @@ void attackHandle(bool& drawAttack, sf::Vector2i& attackLocationInt, sf::CircleS
         }
 }
 
+void turretPrev(Turret& prevTurret, sf::RenderWindow& window, Turret::turret_Type prev) {
+    sf::Vector2f mousePos;
+    mousePos.x = sf::Mouse::getPosition(window).x;
+    mousePos.y = sf::Mouse::getPosition(window).y;
+    prevTurret.prevUp(mousePos, prev);
+}
+
+void turretPlace(Wave& waves, sf::RenderWindow& window, std::vector<Turret>& turrets, Turret::turret_Type turret) {
+    if (waves.returnMoney() >= turret.cost) {
+        waves.spendMoney(turret.cost);
+        sf::Vector2f mousePos;
+        mousePos.x = sf::Mouse::getPosition(window).x;
+        mousePos.y = sf::Mouse::getPosition(window).y;
+        turrets.push_back(Turret(mousePos, turret));
+
+    }
+    else {
+
+
+    }
+}
+
+void keyboardInputs(std::vector<Turret>& turrets, sf::RenderWindow& window, Wave& waves, const std::optional<sf::Event>& event, Turret& prevTurret){
+    const Turret::turret_Type emptyTurret = {
+        0,              // damage
+        0.0f,            // shotsPerSec
+        0,               // pointsCount
+        sf::Color::Transparent, // hullColor
+        sf::Color::Transparent,   // shotColor
+        0.0f,            // aoeSize
+        0,             // cost
+        0.0f            // range
+    };
+    
+    const Turret::turret_Type basicTurret = {
+        25,              // damage
+        4.0f,            // shotsPerSec
+        3,               // pointsCount
+        sf::Color::Red, // hullColor
+        sf::Color::Blue,   // shotColor
+        0.0f,            // aoeSize
+        10,             // cost
+        200.0f            // range
+    };
+
+    const Turret::turret_Type bombTurret = {
+        50,              // damage
+        0.5f,            // shotsPerSec
+        5,               // pointsCount
+        sf::Color::Green, // hullColor
+        sf::Color::Red,   // shotColor
+        100.0f,            // aoeSize
+        50,             // cost
+        300.0f            // range
+    };
+    static const sf::Vector2f emptyLoc = { 0,0 };
+    
+    if (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Num1) {
+        turretPrev(prevTurret, window, basicTurret);
+
+    } else if (event->is<sf::Event::KeyReleased>() && event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Num1) {
+        prevTurret.prevUp(emptyLoc, emptyTurret);
+        turretPlace(waves, window, turrets, basicTurret);
+
+    }
+
+    if (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Num2) {
+        turretPrev(prevTurret, window, bombTurret);
+
+    }
+    else if (event->is<sf::Event::KeyReleased>() && event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Num2) {
+        prevTurret.prevUp(emptyLoc, emptyTurret);
+        turretPlace(waves, window, turrets, bombTurret);
+
+    }
+}
+
 int main()
 {
-    std::srand(time(0));
-    Wave waves;
-    sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Tower Defense Game");
-    window.setVerticalSyncEnabled(true); // Enable V-Sync
-    //window.setFramerateLimit(60);
-    sf::Vector2 windowSize = window.getSize();
+    //Initialzation
+        std::srand(time(0));
+        Wave waves;
+        sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Tower Defense Game");
+        window.setVerticalSyncEnabled(false); // Enable V-Sync
+        //window.setFramerateLimit(60);
+        sf::Vector2 windowSize = window.getSize();
+        std::vector<Enemy> enemies; //List of enemies
+        std::vector<Turret> turrets; //List of turrets
+        Turret prevTurret = {sf::Vector2f(0,0), 0, 0.0f, 0, sf::Color::Transparent, sf::Color::Transparent, 0.0f, 0, 0};
+        int count = 0; //Total Enemy Count
 
     // Define waypoints for the path
-    std::vector<sf::Vector2f> waypoints = {
-        {0.f,  windowSize.y * 0.10f },
-        {windowSize.x * 0.90f, windowSize.y * 0.10f},
-        {windowSize.x * 0.90f, windowSize.y * 0.30f},
-        {windowSize.x * 0.10f, windowSize.y * 0.30f},
-        {windowSize.x * 0.10f, windowSize.y * 0.80f},
-        {windowSize.x * 1.0f, windowSize.y * 0.80f},
+        std::vector<sf::Vector2f> waypoints = {
+            {0.f,  windowSize.y * 0.10f },
+            {windowSize.x * 0.90f, windowSize.y * 0.10f},
+            {windowSize.x * 0.90f, windowSize.y * 0.30f},
+            {windowSize.x * 0.10f, windowSize.y * 0.30f},
+            {windowSize.x * 0.10f, windowSize.y * 0.80f},
+            {windowSize.x * 1.0f, windowSize.y * 0.80f},
         
-    };
+        };
 
     // Set initial position of the enemy at the start of the path
     
     // Create a vertex array for the path
-    sf::VertexArray line(sf::PrimitiveType::LineStrip, waypoints.size());
-    for (std::size_t i = 0; i < waypoints.size(); ++i)
-    {
-        line[i].position = waypoints[i];
-        line[i].color = sf::Color::Red;
-    }
+        sf::VertexArray line(sf::PrimitiveType::LineStrip, waypoints.size());
+        for (std::size_t i = 0; i < waypoints.size(); ++i)
+        {
+            line[i].position = waypoints[i];
+            line[i].color = sf::Color::Red;
+        }
 
     // Load a font
-    sf::Font font;
-    if (!font.openFromFile("Roboto-Regular.ttf"))
-    {
-        std::cerr << "Could not load font" << std::endl;
-    }
+        sf::Font font;
+        if (!font.openFromFile("Roboto-Regular.ttf"))
+        {
+            std::cerr << "Could not load font" << std::endl;
+        }
 
     
     // Create a text object to display the framerate
-    sf::Text framerateText(font);
-    framerateText.setCharacterSize(24);
-    framerateText.setFillColor(sf::Color::White);
-    framerateText.setPosition({0.0f, windowSize.y * .96f});
+        sf::Text framerateText(font);
+        framerateText.setCharacterSize(24);
+        framerateText.setFillColor(sf::Color::White);
+        framerateText.setPosition({0.0f, windowSize.y * .96f});
     //Create an object to display enemy count and wave number
-    sf::Text waveInfo(font);
-    waveInfo.setCharacterSize(32);
-    waveInfo.setFillColor(sf::Color::White);
-    waveInfo.setPosition({ 0.0f, 20.0f });
+        sf::Text waveInfo(font);
+        waveInfo.setCharacterSize(32);
+        waveInfo.setFillColor(sf::Color::White);
+        waveInfo.setPosition({ 0.0f, 20.0f });
     //Create attack shape
         sf::CircleShape attackCircle;
         attackCircle.setRadius(50.0f);
@@ -90,16 +185,8 @@ int main()
         bool drawAttack = false;
         sf::Vector2i attackLocation;
 
-    // Create a list of enemies
-    std::vector<Enemy> enemies;
-    //Create a list of Turrets
-    std::vector<Turret> turrets;
-    // Variables to control which half to update
-    //Total Enemy Count
-    int count = 0;
-    //Spawn Delay
-    float spawn = 0;
-    bool buffer = false;
+
+    
     
 
     // Main game loop
@@ -110,12 +197,10 @@ int main()
         // Time since last frame
         sf::Time deltaTime = clock.restart();
         
-        // Add an enemy to the list
-        
         
 
         // Process events
-        while (auto event = window.pollEvent())
+        while (const std::optional event = window.pollEvent())
         {
             if (event.has_value())
             {
@@ -130,22 +215,13 @@ int main()
                     }
                 }
 
-                
+                keyboardInputs(turrets, window, waves, event, prevTurret);
                 
             }
 
-           
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1) && buffer == false) {
-            sf::Vector2f mousePos;
-            mousePos.x = sf::Mouse::getPosition(window).x;
-            mousePos.y = sf::Mouse::getPosition(window).y;
-            turrets.push_back(Turret(mousePos, 25, 5.0f, 3, sf::Color::Red, sf::Color::Blue, 0.0f, 1, 200.0f));
-            buffer = true;
-        }
-        else if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1))) {
-            buffer = false;
-        }
+        
+        
 
         for (auto turret = turrets.begin(); turret != turrets.end();) {
             turret->shoot(deltaTime, enemies);
@@ -158,15 +234,15 @@ int main()
             it->update(deltaTime);
             
             if (it->dead() ) {
+                waves.enemyDied(it->enemyValue());
                 it = enemies.erase(it);
-                waves.enemyDied();
                 --count;
             }
             
             else if (it->hasReachedEnd())
             {
+                waves.enemyDied(it->enemyValue());
                 it = enemies.erase(it); // Remove the enemy from the list
-                waves.enemyDied();
                 --count;
             }
             else
@@ -175,14 +251,12 @@ int main()
             }
         }
 
-        
-
         waves.spawnEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
         // Update UI text
         float fps = 1.f / deltaTime.asSeconds();
         framerateText.setString("FPS: " + std::to_string(static_cast<int>(fps)) );
-        waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count()));
+        waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count()) + " Money: $" + std::to_string(waves.returnMoney()));
 
         // Clear the screen
         window.clear();
@@ -214,6 +288,10 @@ int main()
             }
             
         }
+        //Draw Prev Turret
+        window.draw(prevTurret.getHull());
+        window.draw(prevTurret.getRange());
+        
 
         // Display what was drawn
         window.display();

@@ -4,8 +4,10 @@
 #include "turret.h"
 #include "enemy.h"
 
+
     Turret::Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range)
-        : location(location), damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), hullColor(hullColor), shotColor(shotColor), cost(cost), aoeSize(aoeSize), range(range) {
+        : location(location), damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), hullColor(hullColor), 
+        shotColor(shotColor), cost(cost), aoeSize(aoeSize), range(range) {
         shot.setPrimitiveType(sf::PrimitiveType::LineStrip);
         shot.resize(2);
         hull.setPointCount(pointsCount);
@@ -32,8 +34,9 @@
         shot[1].position = location;
     }
 
-    Turret::Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range, int ammo, float reloadDelay)
-        : damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), ammo(ammo), reloadDelay(reloadDelay), hullColor(hullColor), shotColor(shotColor), cost(cost), aoeSize(aoeSize), range(range) {
+    Turret::Turret(sf::Vector2f location, const turret_Type turretType) 
+        : damage(turretType.damage), fireDelay(1 / turretType.shotsPerSec), pointsCount(turretType.pointsCount), ammo(turretType.ammo), reloadDelay(turretType.reloadDelay), 
+        hullColor(turretType.hullColor), shotColor(turretType.shotColor), cost(turretType.cost), aoeSize(turretType.aoeSize), range(turretType.range) {
         shot.setPrimitiveType(sf::PrimitiveType::LineStrip);
         shot.resize(2);
         hull.setPointCount(pointsCount);
@@ -45,12 +48,19 @@
         rangeDraw.setOrigin(rangeDraw.getGeometricCenter());
         rangeDraw.setOutlineColor(sf::Color::White);
         rangeDraw.setOutlineThickness(2.0f);
+        rangeDraw.setPosition(location);
+        rangeDraw.setFillColor(sf::Color::Transparent);
+        shotAoe.setFillColor(sf::Color::Transparent);
+        shotAoe.setRadius(aoeSize);
+        shotAoe.setOutlineColor(shotColor);
+        shotAoe.setOutlineThickness(2.0f);
+        shotAoe.setOrigin(shotAoe.getGeometricCenter());
+        shotAoe.setPosition(sf::Vector2f(-200, -200));
 
+        shot[0].position = location;
         shot[0].color = shotColor;
         shot[1].color = shotColor;
-        shot[0].position = location;
         shot[1].position = location;
-
     }
 
     void Turret::shoot(sf::Time deltaTime, std::vector<Enemy>& enemies) {
@@ -111,22 +121,35 @@
         lastShot += deltaTime.asSeconds();
     }
 
-    const sf::CircleShape& Turret::getHull() const {
-        return hull;
+    void Turret::prevUp(sf::Vector2f location, turret_Type turretType) {
+        hull.setPosition(location);
+        hull.setFillColor(turretType.hullColor);
+        hull.setPointCount(turretType.pointsCount);
+        rangeDraw.setRadius(turretType.range);
+        rangeDraw.setOrigin(rangeDraw.getGeometricCenter());
+        rangeDraw.setPosition(location);
     }
 
-    const sf::CircleShape& Turret::getRange() const {
-        return rangeDraw;
-    }
+    const sf::CircleShape& Turret::getHull() const { return hull; }
 
-    const sf::VertexArray& Turret::getShot() const {
-        return shot;
-    }
+    const sf::CircleShape& Turret::getRange() const { return rangeDraw; }
 
-    const sf::CircleShape& Turret::getShotAoe() const {
-        return shotAoe;
-    }
+    const sf::VertexArray& Turret::getShot() const { return shot; }
 
-    const float& Turret::getShotTime() const {
-        return lastShot;
-    }
+    const sf::CircleShape& Turret::getShotAoe() const { return shotAoe; }
+
+    const float& Turret::getShotTime() const { return lastShot; }
+
+    const int& Turret::returnDamage() const { return damage; }
+
+    const float& Turret::returnSPS() const { return fireDelay; }
+
+    const int& Turret::returnCost() const { return cost; }
+
+    const float& Turret::returnAoe() const { return aoeSize; }
+
+    const float& Turret::returnRange() const { return range; }
+
+    const int& Turret::returnAmmo() const { return ammo; }
+
+    const float& Turret::returnReload() const { return reloadDelay; }

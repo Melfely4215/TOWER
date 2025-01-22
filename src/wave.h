@@ -15,6 +15,7 @@ private:
     int waveId = 1;
     float counter = 0;
     float spawnDelay = 0;
+    int money = 10;
 
 public:
 
@@ -26,13 +27,15 @@ public:
 
     void spawnEnemies(sf::Time deltaTime, std::vector<Enemy>& enemies, int& count, const std::vector<sf::Vector2f>& waypoints);
 
-    void enemyDied();
+    void enemyDied(int reward);
 
-    int wave_Id() const;
+    void spendMoney(int spentAmount);
 
-    int enemy_Count() const;
+    const int&  wave_Id() const;
 
+    const int& enemy_Count() const;
 
+    const int& returnMoney() const;
 
 };
 

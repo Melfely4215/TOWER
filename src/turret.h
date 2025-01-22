@@ -29,11 +29,26 @@ private:
     sf::CircleShape shotAoe;
 
 public:
+    struct turret_Type {
+        int damage;
+        float shotsPerSec;
+        int pointsCount;
+        sf::Color hullColor;
+        sf::Color shotColor;
+        float aoeSize;
+        int cost;
+        float range;
+        int ammo = -1;
+        float reloadDelay = 0;
+    };
+
     Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range);
 
-    Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range, int ammo, float reloadDelay);
+    Turret(sf::Vector2f location, const turret_Type turretType);
 
     void shoot(sf::Time deltaTime, std::vector<Enemy>& enemies);
+
+    void prevUp(sf::Vector2f location, turret_Type turretType);
 
     const sf::CircleShape& getHull() const;
 
@@ -45,6 +60,20 @@ public:
 
     const float& getShotTime() const;
 
+    const int& returnDamage() const;
+
+    const float& returnSPS() const;
+
+    const int& returnCost() const;
+
+    const float& returnAoe() const;
+
+    const float& returnRange() const;
+
+    const int& returnAmmo() const;
+
+    const float& returnReload() const;
+    
 
 
 };

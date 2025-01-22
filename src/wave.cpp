@@ -43,13 +43,18 @@
         }
     }
 
-    void Wave::enemyDied() {
+    void Wave::enemyDied(int reward) {
         enemyCount = enemyCount - 1;
+        money += reward;
+
     }
 
-    int Wave::wave_Id() const {
-        return waveId;
+    void Wave::spendMoney(int spentAmount) {
+        money = money - spentAmount;
     }
-    int Wave::enemy_Count() const {
-        return enemyCount;
-    }
+
+    const int& Wave::wave_Id() const { return waveId; }
+
+    const int& Wave::enemy_Count() const { return enemyCount; }
+
+    const int& Wave::returnMoney() const { return money; }
