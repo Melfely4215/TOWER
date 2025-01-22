@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include "enemy.h"
+#include <cmath>
 #include <vector>
 #include "wave.h"
 
@@ -35,7 +36,7 @@
             }
 
             count++;
-            spawnDelay = 1 / std::sqrt(waveId);
+            spawnDelay = 1 / sqrt(waveId);
         }
         else {
             spawnDelay -= static_cast<float>(deltaTime.asSeconds());
