@@ -35,7 +35,7 @@
             }
 
             count++;
-            spawnDelay = 1 / sqrt(waveId);
+            spawnDelay = 1 / std::sqrt(waveId);
         }
         else {
             spawnDelay -= static_cast<float>(deltaTime.asSeconds());
