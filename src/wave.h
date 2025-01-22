@@ -4,17 +4,22 @@
 #include <SFML/Graphics.hpp>
 #include "enemy.h"
 #include <vector>
+#include "types.h"
 
 
 
 class Wave {
 private:
     //Variables
-    int enemyCap = 2;
-    int enemyCount = 2;
-    int waveId = 1;
-    float counter = 0;
-    float spawnDelay = 0;
+        int enemyCap = 2;
+        int enemyCount = 2;
+        int waveId = 1;
+        float counter = 0;
+        float spawnDelay = 0;
+        int money = 25;
+
+    //Enemies
+    
 
 public:
 
@@ -26,13 +31,15 @@ public:
 
     void spawnEnemies(sf::Time deltaTime, std::vector<Enemy>& enemies, int& count, const std::vector<sf::Vector2f>& waypoints);
 
-    void enemyDied();
+    void enemyDied(int reward);
 
-    int wave_Id() const;
+    void spendMoney(int spentAmount);
 
-    int enemy_Count() const;
+    const int&  wave_Id() const;
 
+    const int& enemy_Count() const;
 
+    const int& returnMoney() const;
 
 };
 
