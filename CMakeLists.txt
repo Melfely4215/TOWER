@@ -14,6 +14,6 @@ FetchContent_MakeAvailable(SFML)
 
 file(COPY fonts/ DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
-add_executable(main src/main.cpp)
+add_executable(main src/main.cpp "src/enemy.h" "src/enemy.cpp" "src/turret.h" "src/turret.cpp" "src/wave.h" "src/wave.cpp")
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics)
