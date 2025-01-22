@@ -6,19 +6,7 @@
 #include "enemy.h"
 #include "turret.h"
 #include "wave.h"
-
-//struct turret_Type {
-//    int damage;
-//    float shotsPerSec;
-//    int pointsCount;
-//    sf::Color hullColor;
-//    sf::Color shotColor;
-//    float aoeSize;
-//    int cost;
-//    float range;
-//    int ammo = -1;
-//    float reloadDelay = 0;
-//};
+#include "types.h"
 
 void attackHandle(bool& drawAttack, sf::Vector2i& attackLocationInt, sf::CircleShape& attackCircle, std::vector<Enemy>& enemies) {
     //variables
@@ -45,81 +33,52 @@ void attackHandle(bool& drawAttack, sf::Vector2i& attackLocationInt, sf::CircleS
         }
 }
 
-void turretPrev(Turret& prevTurret, sf::RenderWindow& window, Turret::turret_Type prev) {
+sf::Vector2f mousePosGet(sf::RenderWindow& window) {
     sf::Vector2f mousePos;
     mousePos.x = sf::Mouse::getPosition(window).x;
     mousePos.y = sf::Mouse::getPosition(window).y;
-    prevTurret.prevUp(mousePos, prev);
+    return mousePos;
 }
 
-void turretPlace(Wave& waves, sf::RenderWindow& window, std::vector<Turret>& turrets, Turret::turret_Type turret) {
-    if (waves.returnMoney() >= turret.cost) {
-        waves.spendMoney(turret.cost);
-        sf::Vector2f mousePos;
-        mousePos.x = sf::Mouse::getPosition(window).x;
-        mousePos.y = sf::Mouse::getPosition(window).y;
-        turrets.push_back(Turret(mousePos, turret));
+void placeTurret(std::vector<Turret>& turrets, Wave& waves, Turret turret ) {
+    if (waves.returnMoney() >= turret.returnCost()) {
+        waves.spendMoney(turret.returnCost());
+        turrets.push_back(turret);
 
     }
     else {
-
 
     }
 }
 
 void keyboardInputs(std::vector<Turret>& turrets, sf::RenderWindow& window, Wave& waves, const std::optional<sf::Event>& event, Turret& prevTurret){
-    const Turret::turret_Type emptyTurret = {
-        0,              // damage
-        0.0f,            // shotsPerSec
-        0,               // pointsCount
-        sf::Color::Transparent, // hullColor
-        sf::Color::Transparent,   // shotColor
-        0.0f,            // aoeSize
-        0,             // cost
-        0.0f            // range
-    };
     
-    const Turret::turret_Type basicTurret = {
-        25,              // damage
-        4.0f,            // shotsPerSec
-        3,               // pointsCount
-        sf::Color::Red, // hullColor
-        sf::Color::Blue,   // shotColor
-        0.0f,            // aoeSize
-        10,             // cost
-        200.0f            // range
-    };
-
-    const Turret::turret_Type bombTurret = {
-        50,              // damage
-        0.5f,            // shotsPerSec
-        5,               // pointsCount
-        sf::Color::Green, // hullColor
-        sf::Color::Red,   // shotColor
-        100.0f,            // aoeSize
-        50,             // cost
-        300.0f            // range
-    };
-    static const sf::Vector2f emptyLoc = { 0,0 };
+    static Basic_Turret basicTurret = {sf::Vector2f(0,0)};
+    static Empty_Turret emptyTurret = {sf::Vector2f(0,0)};
+    static Bomb_Turret bombTurret = {sf::Vector2f(0,0)};
+    
+    static const sf::Vector2f emptyLoc = {0,0};
     
     if (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Num1) {
-        turretPrev(prevTurret, window, basicTurret);
-
-    } else if (event->is<sf::Event::KeyReleased>() && event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Num1) {
-        prevTurret.prevUp(emptyLoc, emptyTurret);
-        turretPlace(waves, window, turrets, basicTurret);
-
+        
+        prevTurret.updateTurret(mousePosGet(window), basicTurret);
+    }
+    else if (event->is<sf::Event::KeyReleased>() && event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Num1) {
+        prevTurret.updateTurret(emptyLoc, emptyTurret);
+        Basic_Turret builtTurret = { mousePosGet(window) };
+        placeTurret(turrets, waves, builtTurret);
     }
 
     if (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Num2) {
-        turretPrev(prevTurret, window, bombTurret);
-
+        prevTurret.updateTurret(mousePosGet(window), bombTurret);
     }
     else if (event->is<sf::Event::KeyReleased>() && event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Num2) {
-        prevTurret.prevUp(emptyLoc, emptyTurret);
-        turretPlace(waves, window, turrets, bombTurret);
-
+        prevTurret.updateTurret(emptyLoc, emptyTurret);
+        Bomb_Turret builtTurret = { mousePosGet(window) };
+        placeTurret(turrets, waves, builtTurret);
     }
+
+
 }
 
 int main()

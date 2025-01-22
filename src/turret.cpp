@@ -34,34 +34,35 @@
         shot[1].position = location;
     }
 
-    Turret::Turret(sf::Vector2f location, const turret_Type turretType) 
-        : damage(turretType.damage), fireDelay(1 / turretType.shotsPerSec), pointsCount(turretType.pointsCount), ammo(turretType.ammo), reloadDelay(turretType.reloadDelay), 
-        hullColor(turretType.hullColor), shotColor(turretType.shotColor), cost(turretType.cost), aoeSize(turretType.aoeSize), range(turretType.range) {
-        shot.setPrimitiveType(sf::PrimitiveType::LineStrip);
-        shot.resize(2);
-        hull.setPointCount(pointsCount);
-        hull.setFillColor(hullColor);
-        hull.setRadius(20.0f);
-        hull.setOrigin(hull.getGeometricCenter());
-        hull.setPosition(location);
-        rangeDraw.setRadius(range);
-        rangeDraw.setOrigin(rangeDraw.getGeometricCenter());
-        rangeDraw.setOutlineColor(sf::Color::White);
-        rangeDraw.setOutlineThickness(2.0f);
-        rangeDraw.setPosition(location);
-        rangeDraw.setFillColor(sf::Color::Transparent);
-        shotAoe.setFillColor(sf::Color::Transparent);
-        shotAoe.setRadius(aoeSize);
-        shotAoe.setOutlineColor(shotColor);
-        shotAoe.setOutlineThickness(2.0f);
-        shotAoe.setOrigin(shotAoe.getGeometricCenter());
-        shotAoe.setPosition(sf::Vector2f(-200, -200));
+    Turret::Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range, int ammo, float reloadDelay)
+        : location(location), damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), hullColor(hullColor), ammo(ammo), reloadDelay(reloadDelay),
+            shotColor(shotColor), cost(cost), aoeSize(aoeSize), range(range) {
+            shot.setPrimitiveType(sf::PrimitiveType::LineStrip);
+            shot.resize(2);
+            hull.setPointCount(pointsCount);
+            hull.setFillColor(hullColor);
+            hull.setRadius(20.0f);
+            hull.setOrigin(hull.getGeometricCenter());
+            hull.setPosition(location);
+            rangeDraw.setRadius(range);
+            rangeDraw.setOrigin(rangeDraw.getGeometricCenter());
+            rangeDraw.setOutlineColor(sf::Color::White);
+            rangeDraw.setOutlineThickness(2.0f);
+            rangeDraw.setPosition(location);
+            rangeDraw.setFillColor(sf::Color::Transparent);
+            shotAoe.setFillColor(sf::Color::Transparent);
+            shotAoe.setRadius(aoeSize);
+            shotAoe.setOutlineColor(shotColor);
+            shotAoe.setOutlineThickness(2.0f);
+            shotAoe.setOrigin(shotAoe.getGeometricCenter());
+            shotAoe.setPosition(sf::Vector2f(-200, -200));
 
-        shot[0].position = location;
-        shot[0].color = shotColor;
-        shot[1].color = shotColor;
-        shot[1].position = location;
+            shot[0].position = location;
+            shot[0].color = shotColor;
+            shot[1].color = shotColor;
+            shot[1].position = location;
     }
+
 
     void Turret::shoot(sf::Time deltaTime, std::vector<Enemy>& enemies) {
         if (lastShot >= fireDelay) {
@@ -121,13 +122,14 @@
         lastShot += deltaTime.asSeconds();
     }
 
-    void Turret::prevUp(sf::Vector2f location, turret_Type turretType) {
+    void Turret::updateTurret(sf::Vector2f location, Turret turret) {
         hull.setPosition(location);
-        hull.setFillColor(turretType.hullColor);
-        hull.setPointCount(turretType.pointsCount);
-        rangeDraw.setRadius(turretType.range);
+        hull.setFillColor(turret.hullColor);
+        hull.setPointCount(turret.pointsCount);
+        rangeDraw.setRadius(turret.range);
         rangeDraw.setOrigin(rangeDraw.getGeometricCenter());
         rangeDraw.setPosition(location);
+
     }
 
     const sf::CircleShape& Turret::getHull() const { return hull; }

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include "wave.h"
+#include "types.h"
 
     //Class Data
     Wave::Wave() {
@@ -26,13 +27,18 @@
 
     }
     void Wave::spawnEnemies(sf::Time deltaTime, std::vector<Enemy>& enemies, int& count, const std::vector<sf::Vector2f>& waypoints) {
+        //Enemies
+            static Basic_Enemy basicEnemy = { waypoints };
+            static Fast_Enemy fastEnemy = { waypoints };
+
+
         int enemyType = (rand() % 2) + 1;
         if (!(count >= enemyCount) && spawnDelay <= 0) {
             if (enemyType == 2) {
-                enemies.emplace_back(waypoints, 300, 25, 15, 1, sf::Color::Blue); //Fast Guy
+                enemies.emplace_back(fastEnemy); //Fast Guy
             }
             else {
-                enemies.emplace_back(waypoints, 100, 100, 25, 1, sf::Color::White); //Base Enemy
+                enemies.emplace_back(basicEnemy); //Base Enemy
             }
 
             count++;

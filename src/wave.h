@@ -4,18 +4,22 @@
 #include <SFML/Graphics.hpp>
 #include "enemy.h"
 #include <vector>
+#include "types.h"
 
 
 
 class Wave {
 private:
     //Variables
-    int enemyCap = 2;
-    int enemyCount = 2;
-    int waveId = 1;
-    float counter = 0;
-    float spawnDelay = 0;
-    int money = 10;
+        int enemyCap = 2;
+        int enemyCount = 2;
+        int waveId = 1;
+        float counter = 0;
+        float spawnDelay = 0;
+        int money = 25;
+
+    //Enemies
+    
 
 public:
 
