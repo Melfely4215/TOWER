@@ -4,6 +4,6 @@ Built from CMAKE SFML Template
 Currently in the works. Progress is happening, but this is nothing to crazy. 
 
 
-#LICENSE
+# LICENSE
 
 MIT LICENSE
