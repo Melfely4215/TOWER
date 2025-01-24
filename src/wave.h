@@ -17,6 +17,7 @@ private:
         float counter = 0;
         float spawnDelay = 0;
         int money = 25;
+        int health = 10;
 
     //Enemies
     
@@ -35,11 +36,16 @@ public:
 
     void spendMoney(int spentAmount);
 
+    void enemyWon(int damage);
+
     const int&  wave_Id() const;
 
     const int& enemy_Count() const;
 
     const int& returnMoney() const;
+    
+    const int& returnHealth() const;
+
 
 };
 

@@ -166,7 +166,7 @@ int main()
         {
             if (event.has_value())
             {
-                if (event->is<sf::Event::Closed>())
+                if (event->is<sf::Event::Closed>() || waves.returnHealth() <= 0)
                     window.close();
                 
                 if (const auto& mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
@@ -203,7 +203,7 @@ int main()
             
             else if (it->hasReachedEnd())
             {
-                waves.enemyDied(it->enemyValue());
+                waves.enemyWon(it->enemyValue()); //The damage an enemy does is equal to their value, so just use the value return function. 
                 it = enemies.erase(it); // Remove the enemy from the list
                 --count;
             }
@@ -218,7 +218,9 @@ int main()
         // Update UI text
         float fps = 1.f / deltaTime.asSeconds();
         framerateText.setString("FPS: " + std::to_string(static_cast<int>(fps)) );
-        waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count()) + " Money: $" + std::to_string(waves.returnMoney()));
+        waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count())
+            + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth())
+        );
 
         // Clear the screen
         window.clear();

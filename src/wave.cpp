@@ -49,6 +49,11 @@
         }
     }
 
+    void Wave::enemyWon(int damage) {
+        enemyCount -= 1;
+        health -= damage;
+    }
+
     void Wave::enemyDied(int reward) {
         enemyCount = enemyCount - 1;
         money += reward;
@@ -64,3 +69,5 @@
     const int& Wave::enemy_Count() const { return enemyCount; }
 
     const int& Wave::returnMoney() const { return money; }
+
+    const int& Wave::returnHealth() const { return health; }
