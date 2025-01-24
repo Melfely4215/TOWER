@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Config.hpp>
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -7,6 +8,8 @@
 #include "turret.h"
 #include "wave.h"
 #include "types.h"
+
+#define SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
 void attackHandle(bool& drawAttack, sf::Vector2i& attackLocationInt, sf::CircleShape& attackCircle, std::vector<Enemy>& enemies) {
     //variables
