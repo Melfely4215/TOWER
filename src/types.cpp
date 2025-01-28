@@ -57,5 +57,5 @@
             25, //Hp
             15, //Size
             1, //Value
-            sf::Color::White) //Color
+            sf::Color::Blue) //Color
     {}
