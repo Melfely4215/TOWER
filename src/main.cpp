@@ -219,7 +219,7 @@ int main()
         float fps = 1.f / deltaTime.asSeconds();
         framerateText.setString("FPS: " + std::to_string(static_cast<int>(fps)) );
         waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count())
-            + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth())
+            + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth()) + " Turrets: " + std::to_string(turrets.size())
         );
 
         // Clear the screen
@@ -245,7 +245,7 @@ int main()
         //Draw Turrets
         for (const auto& turret : turrets) {
             window.draw(turret.getHull());
-            window.draw(turret.getRange());
+            //window.draw(turret.getRange());
             if (turret.getShotTime() <= .05) {
                 window.draw(turret.getShot());
                 window.draw(turret.getShotAoe());
