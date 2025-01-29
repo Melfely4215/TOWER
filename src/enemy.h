@@ -36,7 +36,7 @@ public:
 
     void update(sf::Time deltaTime);
 
-    sf::Vector2f currentPos();
+    sf::Vector2f currentPos() const;
 
     float distanced_Traveled() const;
 

@@ -38,8 +38,10 @@
             float y = path[0].y + size * std::sin(angle);
             vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
         }
-        //this->setOrigin(this->getGeometricCenter());
         vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
+        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
+        this->setOrigin(path[0]);
+        this->setPosition(path[0]);
         currentHp = hp;
         hpShape.setOutlineColor(sf::Color::Black);
         hpShape.setOutlineThickness(2.0f);
@@ -92,7 +94,7 @@
 
     }
 
-    sf::Vector2f Enemy::currentPos() {
+    sf::Vector2f Enemy::currentPos() const{
         return this->getPosition();
     }
 

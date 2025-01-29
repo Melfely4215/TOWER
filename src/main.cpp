@@ -237,6 +237,7 @@ int main()
         for (const auto& enemy : enemies) {
             window.draw(enemy);
         }
+
         //Draw Turrets
         for (const auto& turret : turrets) {
             window.draw(turret.getHull());
