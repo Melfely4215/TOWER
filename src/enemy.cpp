@@ -17,6 +17,7 @@
         hpShape.setFillColor(sf::Color::Green);
         hpShape.setSize({ barSize, 10.0f });
         hpShape.setOrigin(hpShape.getGeometricCenter());
+        //shape.setPointCount(5);
 
 
     }

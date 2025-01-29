@@ -213,7 +213,7 @@ int main()
             }
         }
 
-        waves.spawnEnemies(deltaTime, enemies, count, waypoints);
+        waves.debugEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
         // Update UI text
         float fps = 1.f / deltaTime.asSeconds();
@@ -228,9 +228,7 @@ int main()
         // Draw the path
         window.draw(line);
 
-        // Draw the framerate text
-        window.draw(framerateText);
-        window.draw(waveInfo);
+       
         if (drawAttack == true) {
             window.draw(attackCircle);
             drawAttack = false;
@@ -256,6 +254,9 @@ int main()
         window.draw(prevTurret.getHull());
         window.draw(prevTurret.getRange());
         
+        // Draw the framerate text
+        window.draw(framerateText);
+        window.draw(waveInfo);
 
         // Display what was drawn
         window.display();
