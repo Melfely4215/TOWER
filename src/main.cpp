@@ -234,12 +234,9 @@ int main()
             drawAttack = false;
         }
 
-        // Draw the enemy
-        for (const auto& enemy : enemies)
-        {
-            window.draw(enemy.getHpBar());
+        for (const auto& enemy : enemies) {
+            window.draw(enemy);
         }
-        window.draw(enemies);
         //Draw Turrets
         for (const auto& turret : turrets) {
             window.draw(turret.getHull());

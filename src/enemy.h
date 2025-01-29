@@ -25,14 +25,14 @@ private:
     int points = 20;
     sf::VertexArray vertices;
 
-    void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
 public:
 
     //Class Data
     Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value, sf::Color color);
 
     Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value, sf::Color color, int points);
- 
 
     void update(sf::Time deltaTime);
 
@@ -41,7 +41,6 @@ public:
     float distanced_Traveled() const;
 
     void updateHp(float damage, float heal);
-    
 
     bool hasReachedEnd() const;
 
