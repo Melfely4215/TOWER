@@ -1,16 +1,21 @@
+#define _USE_MATH_DEFINES
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include <cmath>
 #include "enemy.h"
+#include <cmath>
+
 
     //Class Data
     Enemy::Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value, sf::Color color)
         : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value), color(color)
     {
-        shape.setRadius(size);
-        shape.setFillColor(color);
-        shape.setOrigin(shape.getGeometricCenter());
-        shape.setPosition(path[0]);
+        for (int i = 0; i <= 20; ++i) {
+            float angle = i * 2 * M_PI / 20;
+            float x = path[0].x + size * std::cos(angle);
+            float y = path[0].y + size * std::sin(angle);
+            vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
+        }
+        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
         currentHp = hp;
         hpShape.setOutlineColor(sf::Color::Black);
         hpShape.setOutlineThickness(2.0f);
@@ -25,10 +30,13 @@
     Enemy::Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value, sf::Color color, int points)
         : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value), color(color), points(points)
     {
-        shape.setRadius(size);
-        shape.setFillColor(color);
-        shape.setOrigin(shape.getGeometricCenter());
-        shape.setPosition(path[0]);
+        for (int i = 0; i <= points; ++i) {
+            float angle = i * 2 * M_PI / points;
+            float x = path[0].x + size * std::cos(angle);
+            float y = path[0].y + size * std::sin(angle);
+            vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
+        }
+        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
         currentHp = hp;
         hpShape.setOutlineColor(sf::Color::Black);
         hpShape.setOutlineThickness(2.0f);
@@ -38,6 +46,17 @@
         shape.setPointCount(points);
 
 
+    }
+
+    void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states)  const {
+
+        // apply the entity's transform -- combine it with the one that was passed by the caller
+        states.transform *= getTransform(); // getTransform() is defined by sf::Transformable
+
+        // you may also override states.shader or states.blendMode if you want
+
+        // draw the vertex array
+        target.draw(vertices, states);
     }
 
     void Enemy::update(sf::Time deltaTime)

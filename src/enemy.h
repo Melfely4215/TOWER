@@ -4,8 +4,11 @@
 #include <SFML/Graphics.hpp>
 
 
-class Enemy {
+class Enemy 
+    : public sf::Drawable, public sf::Transformable
+    {
 private:
+    
     sf::RectangleShape hpShape; //Object used to render HP Bar
     sf::CircleShape shape; //Object used to render body
     std::vector<sf::Vector2f> path;
@@ -20,7 +23,9 @@ private:
     int value;
     float distanceTravl = 0;
     int points = 20;
+    sf::VertexArray vertices;
 
+    void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 public:
 
     //Class Data
