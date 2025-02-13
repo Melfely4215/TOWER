@@ -15,7 +15,7 @@
             float y = path[0].y + size * std::sin(angle);
             vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
         }
-        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
+        vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
         this->setOrigin(path[0]);
         this->setPosition(path[0]);
         currentHp = hp;
@@ -36,10 +36,25 @@
             float angle = i * 2 * M_PI / points;
             float x = path[0].x + size * std::cos(angle);
             float y = path[0].y + size * std::sin(angle);
-            vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
+
+            switch (count) {
+            case 0:
+                vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
+                count++;
+                break;
+            case 1:
+                vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
+                count++;
+                break;
+            case 2:
+                vertices.append(sf::Vertex{ {sf::Vector2f(path[0].x, path[0].y)}, color });
+                count = 0;
+                break;
+
+            }
+
         }
-        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
-        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
+        vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
         this->setOrigin(path[0]);
         this->setPosition(path[0]);
         currentHp = hp;
@@ -126,9 +141,9 @@
         return currentHp <= 0;
     }
 
-    const sf::CircleShape& Enemy::getBody() const
+    const sf::VertexArray& Enemy::getBody() const
     {
-        return shape;
+        return vertices;
     }
 
     const sf::RectangleShape& Enemy::getHpBar() const

@@ -23,6 +23,7 @@ private:
     int value;
     float distanceTravl = 0;
     int points = 20;
+    int count = 0;
     sf::VertexArray vertices;
 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -46,7 +47,7 @@ public:
 
     bool dead() const;
 
-    const sf::CircleShape& getBody() const;
+    const sf::VertexArray& getBody() const;
 
     const sf::RectangleShape& getHpBar() const;
 

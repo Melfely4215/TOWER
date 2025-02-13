@@ -89,12 +89,14 @@ int main()
     //Initialzation
         std::srand(time(0));
         Wave waves;
-        sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Tower Defense Game");
+        sf::RenderWindow window(sf::VideoMode({ 1280, 720 }), "Tower Defense Game");
         window.setVerticalSyncEnabled(false); // Enable V-Sync
         //window.setFramerateLimit(60);
         sf::Vector2 windowSize = window.getSize();
         std::vector<Enemy> enemies; //List of enemies
         std::vector<Turret> turrets; //List of turrets
+        sf::VertexArray bodies; //All the triangles to draw
+        bodies.setPrimitiveType(sf::PrimitiveType::Triangles);
         Turret prevTurret = {sf::Vector2f(0,0), 0, 0.0f, 0, sf::Color::Transparent, sf::Color::Transparent, 0.0f, 0, 0};
         int count = 0; //Total Enemy Count
 
@@ -191,9 +193,15 @@ int main()
         }
         
         // Check if any enemy has reached the end of the path and remove them
+        bodies.clear();
         for (auto it = enemies.begin(); it != enemies.end();)
         {
             it->update(deltaTime);
+
+            sf::VertexArray verticies = it->getBody();
+            for (auto point = 0; point < it->getBody().getVertexCount(); point++) {
+                bodies.append(verticies[point]);
+            }
             
             if (it->dead() ) {
                 waves.enemyDied(it->enemyValue());
@@ -212,6 +220,7 @@ int main()
                 ++it; // Move to the next enemy
             }
         }
+
 
         waves.debugEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
@@ -234,11 +243,15 @@ int main()
             drawAttack = false;
         }
 
-        for (const auto& enemy : enemies) {
+
+
+        /*for (const auto& enemy : enemies) {
             window.draw(enemy);
-        }
+        }*/
 
         //Draw Turrets
+        window.draw(bodies);
+
         for (const auto& turret : turrets) {
             window.draw(turret.getHull());
             //window.draw(turret.getRange());
