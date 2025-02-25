@@ -232,10 +232,10 @@ int main()
         );
 
         // Clear the screen
-        window.clear();
+            window.clear();
 
         // Draw the path
-        window.draw(line);
+            window.draw(line);
 
        
         if (drawAttack == true) {
@@ -243,34 +243,33 @@ int main()
             drawAttack = false;
         }
 
-
-
-        /*for (const auto& enemy : enemies) {
-            window.draw(enemy);
-        }*/
+        //Draw Enemies
+            /*for (const auto& enemy : enemies) {
+                window.draw(enemy);
+            }*/
+            window.draw(bodies);
 
         //Draw Turrets
-        window.draw(bodies);
-
-        for (const auto& turret : turrets) {
-            window.draw(turret.getHull());
-            //window.draw(turret.getRange());
-            if (turret.getShotTime() <= .05) {
-                window.draw(turret.getShot());
-                window.draw(turret.getShotAoe());
-            }
+            for (const auto& turret : turrets) {
+                window.draw(turret.getHull());
+                //window.draw(turret.getRange());
+                if (turret.getShotTime() <= .05) {
+                    window.draw(turret.getShot());
+                    window.draw(turret.getShotAoe());
+                }
             
-        }
-        //Draw Prev Turret
-        window.draw(prevTurret.getHull());
-        window.draw(prevTurret.getRange());
+            }
+
+        //Draw Preview Turret
+            window.draw(prevTurret.getHull());
+            window.draw(prevTurret.getRange());
         
         // Draw the framerate text
-        window.draw(framerateText);
-        window.draw(waveInfo);
+            window.draw(framerateText);
+            window.draw(waveInfo);
 
         // Display what was drawn
-        window.display();
+            window.display();
     }
 
     return 0;

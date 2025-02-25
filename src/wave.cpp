@@ -56,7 +56,7 @@
         if (!(count >= enemyCount) && spawnDelay <= 0) {
             enemies.emplace_back(waypoints, 100, 10000, 25, 1, sf::Color::White, 200);
             count++;
-            spawnDelay = 1;
+            spawnDelay = 0;
         }
         else {
             spawnDelay -= static_cast<float>(deltaTime.asSeconds());

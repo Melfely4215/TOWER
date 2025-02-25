@@ -90,7 +90,14 @@
             if (distance > speed * deltaTime.asSeconds())
             {
                 direction /= distance;
-                this->move(direction * speed * deltaTime.asSeconds());
+                float moveDistanceX = direction.x * speed * deltaTime.asSeconds();
+                float moveDistanceY = direction.y * speed * deltaTime.asSeconds();
+                //this->move(direction * speed * deltaTime.asSeconds());
+                for (int i = 0; i < vertices.getVertexCount(); i++) {
+                    sf::Vertex currentVer = vertices[i];
+                    sf::Vector2f = currentVer.position;
+
+                }
                 distanceTravl += speed * deltaTime.asSeconds();
             }
             else
