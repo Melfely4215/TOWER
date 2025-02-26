@@ -33,7 +33,7 @@
     {
         vertices.append(sf::Vertex{ {path[0]}, color });
         for (int i = 0; i <= points; ++i) {
-            float angle = i * 2 * M_PI / points;
+            float angle = i * 2 * M_PI / (points);
             float x = path[0].x + size * std::cos(angle);
             float y = path[0].y + size * std::sin(angle);
 
@@ -49,6 +49,7 @@
             case 2:
                 vertices.append(sf::Vertex{ {sf::Vector2f(path[0].x, path[0].y)}, color });
                 count = 0;
+                i = i - 2;
                 break;
 
             }
