@@ -199,7 +199,7 @@ int main()
             it->update(deltaTime);
 
             sf::VertexArray verticies = it->getBody();
-            for (auto point = 0; point < it->getBody().getVertexCount(); point++) {
+            for (auto point = 0; point < verticies.getVertexCount(); point++) {
                 bodies.append(verticies[point]);
             }
             

@@ -87,21 +87,33 @@
             sf::Vector2f direction = targetPosition - currentPosition;
             float distance = abs(direction.x) + abs(direction.y);
 
+            
+
             if (distance > speed * deltaTime.asSeconds())
             {
                 direction /= distance;
-                float moveDistanceX = direction.x * speed * deltaTime.asSeconds();
-                float moveDistanceY = direction.y * speed * deltaTime.asSeconds();
-                //this->move(direction * speed * deltaTime.asSeconds());
+                this->move(direction * speed * deltaTime.asSeconds());
                 for (int i = 0; i < vertices.getVertexCount(); i++) {
                     sf::Vertex currentVer = vertices[i];
-                    sf::Vector2f = currentVer.position;
+                    sf::Vector2f location = currentVer.position;
+                    location = location + (direction * speed * deltaTime.asSeconds());
+                    
+                    vertices[i].position = location;
 
                 }
                 distanceTravl += speed * deltaTime.asSeconds();
             }
             else
             {
+                for (int i = 0; i < vertices.getVertexCount(); i++) {
+                    sf::Vertex currentVer = vertices[i];
+                    sf::Vector2f location = currentVer.position;
+                    sf::Vector2f centerDif = location - this->getPosition();
+                    location = targetPosition + centerDif;
+
+                    vertices[i].position = location;
+
+                }
                 this->setPosition(targetPosition); // Snap to the target position if close enough
                 ++currentTargetIndex; // Move to the next target
             }
