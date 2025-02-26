@@ -243,11 +243,7 @@ int main()
             window.draw(attackCircle);
             drawAttack = false;
         }
-
-        //Draw Enemies
-            /*for (const auto& enemy : enemies) {
-                window.draw(enemy);
-            }*/
+            
             window.draw(bodies);
 
         //Draw Turrets

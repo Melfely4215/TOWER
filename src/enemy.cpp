@@ -56,8 +56,6 @@
 
         }
         vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
-        this->setOrigin(path[0]);
-        this->setPosition(path[0]);
         currentHp = hp;
         hpShape.setOutlineColor(sf::Color::Black);
         hpShape.setOutlineThickness(2.0f);
@@ -83,7 +81,7 @@
     {
         if (currentTargetIndex < path.size())
         {
-            sf::Vector2f currentPosition = this->getPosition();
+            sf::Vector2f currentPosition = vertices[0].position;
             sf::Vector2f targetPosition = path[currentTargetIndex];
             sf::Vector2f direction = targetPosition - currentPosition;
             float distance = abs(direction.x) + abs(direction.y);
@@ -93,7 +91,6 @@
             if (distance > speed * deltaTime.asSeconds())
             {
                 direction /= distance;
-                this->move(direction * speed * deltaTime.asSeconds());
                 for (int i = 0; i < vertices.getVertexCount(); i++) {
                     sf::Vertex currentVer = vertices[i];
                     sf::Vector2f location = currentVer.position;
@@ -109,13 +106,12 @@
                 for (int i = 0; i < vertices.getVertexCount(); i++) {
                     sf::Vertex currentVer = vertices[i];
                     sf::Vector2f location = currentVer.position;
-                    sf::Vector2f centerDif = location - this->getPosition();
+                    sf::Vector2f centerDif = location - vertices[0].position;
                     location = targetPosition + centerDif;
 
                     vertices[i].position = location;
 
                 }
-                this->setPosition(targetPosition); // Snap to the target position if close enough
                 ++currentTargetIndex; // Move to the next target
             }
         }
@@ -130,7 +126,7 @@
     }
 
     sf::Vector2f Enemy::currentPos() const{
-        return this->getPosition();
+        return vertices[0].position;
     }
 
     float Enemy::distanced_Traveled() const {
