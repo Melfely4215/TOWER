@@ -8,6 +8,7 @@
 #include "turret.h"
 #include "wave.h"
 #include "types.h"
+#include <thread>
 
 #define SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
