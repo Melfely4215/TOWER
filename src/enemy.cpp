@@ -19,11 +19,6 @@
         this->setOrigin(path[0]);
         this->setPosition(path[0]);
         currentHp = hp;
-        hpShape.setOutlineColor(sf::Color::Black);
-        hpShape.setOutlineThickness(2.0f);
-        hpShape.setFillColor(sf::Color::Green);
-        hpShape.setSize({ barSize, 10.0f });
-        hpShape.setOrigin(hpShape.getGeometricCenter());
 
 
     }
@@ -43,11 +38,6 @@
         this->setOrigin(path[0]);
         this->setPosition(path[0]);
         currentHp = hp;
-        hpShape.setOutlineColor(sf::Color::Black);
-        hpShape.setOutlineThickness(2.0f);
-        hpShape.setFillColor(sf::Color::Green);
-        hpShape.setSize({ barSize, 10.0f });
-        hpShape.setOrigin(hpShape.getGeometricCenter());
 
 
     }
@@ -84,12 +74,19 @@
                 ++currentTargetIndex; // Move to the next target
             }
         }
-        sf::Vector2f hpBarPos = shape.getPosition();
 
         hpPer = currentHp / hp;
-        float newBarSize = barSize * hpPer;
-        hpShape.setSize({ newBarSize, 10.0f });
-        hpShape.setPosition(hpBarPos);
+        color.a;
+
+
+    }
+
+    void Enemy::updateColor(sf::Color newColor) {
+        if ( !(newColor == color) ) {
+            for (int i = 0; i < vertices.getVertexCount(); i++) {
+                vertices[i].color = newColor;
+            }
+        }
 
 
     }

@@ -40,6 +40,8 @@ public:
 
     float distanced_Traveled() const;
 
+    void updateColor(sf::Color newColor);
+
     void updateHp(float damage, float heal);
 
     bool hasReachedEnd() const;
