@@ -82,7 +82,6 @@ void keyboardInputs(std::vector<Turret>& turrets, sf::RenderWindow& window, Wave
         placeTurret(turrets, waves, builtTurret);
     }
 
-
 }
 
 int main()
@@ -192,9 +191,10 @@ int main()
             turret->shoot(deltaTime, enemies);
             turret++;
         }
+
         
+
         // Check if any enemy has reached the end of the path and remove them
-        bodies.clear();
         for (auto it = enemies.begin(); it != enemies.end();)
         {
             it->update(deltaTime);
@@ -226,11 +226,11 @@ int main()
         waves.debugEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
         // Update UI text
-        float fps = 1.f / deltaTime.asSeconds();
-        framerateText.setString("FPS: " + std::to_string(static_cast<int>(fps)) );
-        waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count())
-            + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth()) + " Turrets: " + std::to_string(turrets.size())
-        );
+            float fps = 1.f / deltaTime.asSeconds();
+            framerateText.setString("FPS: " + std::to_string(static_cast<int>(fps)) );
+            waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count())
+                + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth()) + " Turrets: " + std::to_string(turrets.size())
+            );
 
         // Clear the screen
             window.clear();
@@ -246,6 +246,7 @@ int main()
             
             window.draw(bodies);
 
+            bodies.clear(); //Clear bodies once it has been drawn
         //Draw Turrets
             for (const auto& turret : turrets) {
                 window.draw(turret.getHull());
