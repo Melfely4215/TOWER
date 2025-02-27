@@ -89,7 +89,7 @@ int main()
     //Initialzation
         std::srand(time(0));
         Wave waves;
-        sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Tower Defense Game");
+        sf::RenderWindow window(sf::VideoMode({ 1280, 720 }), "Tower Defense Game");
         window.setVerticalSyncEnabled(false); // Enable V-Sync
         //window.setFramerateLimit(60);
         sf::Vector2 windowSize = window.getSize();
@@ -195,7 +195,7 @@ int main()
         {
             it->update(deltaTime);
             
-            if (it->dead() ) {
+            if (it->isDead() == 2) {
                 waves.enemyDied(it->enemyValue());
                 it = enemies.erase(it);
                 --count;
@@ -213,7 +213,7 @@ int main()
             }
         }
 
-        waves.spawnEnemies(deltaTime, enemies, count, waypoints);
+        waves.debugEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
         // Update UI text
         float fps = 1.f / deltaTime.asSeconds();

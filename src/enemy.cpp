@@ -55,36 +55,55 @@
 
     void Enemy::update(sf::Time deltaTime)
     {
-        if (currentTargetIndex < path.size())
-        {
-            sf::Vector2f currentPosition = this->getPosition();
-            sf::Vector2f targetPosition = path[currentTargetIndex];
-            sf::Vector2f direction = targetPosition - currentPosition;
-            float distance = abs(direction.x) + abs(direction.y);
 
-            if (distance > speed * deltaTime.asSeconds())
-            {
-                direction /= distance;
-                this->move(direction * speed * deltaTime.asSeconds());
-                distanceTravl += speed * deltaTime.asSeconds();
+        //Movement calculations
+            if (died ==  0) { //So enemies in death animation don't move enemies don't move
+                if (currentTargetIndex < path.size())
+                {
+                    sf::Vector2f currentPosition = this->getPosition();
+                    sf::Vector2f targetPosition = path[currentTargetIndex];
+                    sf::Vector2f direction = targetPosition - currentPosition;
+                    float distance = abs(direction.x) + abs(direction.y);
+
+                    if (distance > speed * deltaTime.asSeconds())
+                    {
+                        direction /= distance; //Remove magnitude from Direction
+                        this->move(direction * speed * deltaTime.asSeconds()); //Move distance
+                        distanceTravl += speed * deltaTime.asSeconds(); //Update total distance traveled
+                    }
+                    else
+                    {
+                        this->setPosition(targetPosition); // Snap to the target position if close enough
+                        distanceTravl += distance; //Update total distance traveled
+                        ++currentTargetIndex; // Move to the next target
+                    }
+                }
             }
-            else
-            {
-                this->setPosition(targetPosition); // Snap to the target position if close enough
-                ++currentTargetIndex; // Move to the next target
+            
+
+
+        //Death animations
+            if (currentHp <= 0 && died == 0) {
+                died = 1;
+                sf::Color newColor = sf::Color::Red;
+                newColor.a = 255;
+                this->updateColor(newColor);
             }
-        }
-
-        hpPer = currentHp / hp;
-        color.a;
-
-
+            else if (died == 1) {
+                if (diedT >= sf::milliseconds(100)) {
+                    died = 2;
+                }
+                else {
+                    diedT += deltaTime;
+                }
+            }
     }
 
     void Enemy::updateColor(sf::Color newColor) {
         if ( !(newColor == color) ) {
             for (int i = 0; i < vertices.getVertexCount(); i++) {
                 vertices[i].color = newColor;
+                color = newColor;
             }
         }
 
@@ -100,17 +119,15 @@
     }
 
     void Enemy::updateHp(float damage, float heal) {
+        //Varaibles 
+            sf::Color newColor = color;
 
-        currentHp += -damage + heal;
-        if (hpPer > .75f) {
-            hpShape.setFillColor(sf::Color::Green);
-        }
-        else if (hpPer > .25f) {
-            hpShape.setFillColor(sf::Color::Yellow);
-        }
-        else {
-            hpShape.setFillColor(sf::Color::Red);
-        }
+        //Logic
+            currentHp += -damage + heal; //Deal any damages or heals from the call
+            hpPer = currentHp / hp; //Percetange of hp from total full
+        
+            newColor.a = 255 * hpPer; //Calculate a new Alpha value based on that Hp
+            this->updateColor(newColor); //update that color
 
     }
 
@@ -119,8 +136,8 @@
         return currentTargetIndex >= path.size();
     }
 
-    bool Enemy::dead() const {
-        return currentHp <= 0;
+    int Enemy::isDead() {
+        return died;
     }
 
     const sf::CircleShape& Enemy::getBody() const
