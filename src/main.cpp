@@ -89,7 +89,7 @@ int main()
     //Initialzation
         std::srand(time(0));
         Wave waves;
-        sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Tower Defense Game");
+        sf::RenderWindow window(sf::VideoMode({ 1280, 720 }), "Tower Defense Game");
         window.setVerticalSyncEnabled(false); // Enable V-Sync
         //window.setFramerateLimit(60);
         sf::Vector2 windowSize = window.getSize();
@@ -195,7 +195,7 @@ int main()
         {
             it->update(deltaTime);
             
-            if (it->dead() ) {
+            if (it->isDead() == 2) {
                 waves.enemyDied(it->enemyValue());
                 it = enemies.erase(it);
                 --count;
@@ -219,7 +219,7 @@ int main()
         float fps = 1.f / deltaTime.asSeconds();
         framerateText.setString("FPS: " + std::to_string(static_cast<int>(fps)) );
         waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count())
-            + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth())
+            + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth()) + " Turrets: " + std::to_string(turrets.size())
         );
 
         // Clear the screen
@@ -228,24 +228,20 @@ int main()
         // Draw the path
         window.draw(line);
 
-        // Draw the framerate text
-        window.draw(framerateText);
-        window.draw(waveInfo);
+       
         if (drawAttack == true) {
             window.draw(attackCircle);
             drawAttack = false;
         }
 
-        // Draw the enemy
-        for (const auto& enemy : enemies)
-        {
-            window.draw(enemy.getBody());
-            window.draw(enemy.getHpBar());
+        for (const auto& enemy : enemies) {
+            window.draw(enemy);
         }
+
         //Draw Turrets
         for (const auto& turret : turrets) {
             window.draw(turret.getHull());
-            window.draw(turret.getRange());
+            //window.draw(turret.getRange());
             if (turret.getShotTime() <= .05) {
                 window.draw(turret.getShot());
                 window.draw(turret.getShotAoe());
@@ -256,6 +252,9 @@ int main()
         window.draw(prevTurret.getHull());
         window.draw(prevTurret.getRange());
         
+        // Draw the framerate text
+        window.draw(framerateText);
+        window.draw(waveInfo);
 
         // Display what was drawn
         window.display();

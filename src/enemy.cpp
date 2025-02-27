@@ -1,22 +1,24 @@
+#define _USE_MATH_DEFINES
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include <cmath>
 #include "enemy.h"
+#include <cmath>
+
 
     //Class Data
     Enemy::Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value, sf::Color color)
         : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value), color(color)
     {
-        shape.setRadius(size);
-        shape.setFillColor(color);
-        shape.setOrigin(shape.getGeometricCenter());
-        shape.setPosition(path[0]);
+        for (int i = 0; i <= 20; ++i) {
+            float angle = i * 2 * M_PI / 20;
+            float x = path[0].x + size * std::cos(angle);
+            float y = path[0].y + size * std::sin(angle);
+            vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
+        }
+        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
+        this->setOrigin(path[0]);
+        this->setPosition(path[0]);
         currentHp = hp;
-        hpShape.setOutlineColor(sf::Color::Black);
-        hpShape.setOutlineThickness(2.0f);
-        hpShape.setFillColor(sf::Color::Green);
-        hpShape.setSize({ barSize, 10.0f });
-        hpShape.setOrigin(hpShape.getGeometricCenter());
 
 
     }
@@ -24,54 +26,92 @@
     Enemy::Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value, sf::Color color, int points)
         : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value), color(color), points(points)
     {
-        shape.setRadius(size);
-        shape.setFillColor(color);
-        shape.setOrigin(shape.getGeometricCenter());
-        shape.setPosition(path[0]);
+        vertices.append(sf::Vertex{ {path[0]}, color });
+        for (int i = 0; i <= points; ++i) {
+            float angle = i * 2 * M_PI / points;
+            float x = path[0].x + size * std::cos(angle);
+            float y = path[0].y + size * std::sin(angle);
+            vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
+        }
+        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
+        vertices.setPrimitiveType(sf::PrimitiveType::TriangleFan);
+        this->setOrigin(path[0]);
+        this->setPosition(path[0]);
         currentHp = hp;
-        hpShape.setOutlineColor(sf::Color::Black);
-        hpShape.setOutlineThickness(2.0f);
-        hpShape.setFillColor(sf::Color::Green);
-        hpShape.setSize({ barSize, 10.0f });
-        hpShape.setOrigin(hpShape.getGeometricCenter());
-        shape.setPointCount(points);
 
 
+    }
+
+    void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const { //Override
+
+        // apply the entity's transform -- combine it with the one that was passed by the caller
+        states.transform *= getTransform(); // getTransform() is defined by sf::Transformable
+
+        // you may also override states.shader or states.blendMode if you want
+
+        // draw the vertex array
+        target.draw(vertices, states);
     }
 
     void Enemy::update(sf::Time deltaTime)
     {
-        if (currentTargetIndex < path.size())
-        {
-            sf::Vector2f currentPosition = shape.getPosition();
-            sf::Vector2f targetPosition = path[currentTargetIndex];
-            sf::Vector2f direction = targetPosition - currentPosition;
-            float distance = abs(direction.x) + abs(direction.y);
 
-            if (distance > speed * deltaTime.asSeconds())
-            {
-                direction /= distance;
-                shape.move(direction * speed * deltaTime.asSeconds());
-                distanceTravl += speed * deltaTime.asSeconds();
+        //Movement calculations
+            if (died ==  0) { //So enemies in death animation don't move enemies don't move
+                if (currentTargetIndex < path.size())
+                {
+                    sf::Vector2f currentPosition = this->getPosition();
+                    sf::Vector2f targetPosition = path[currentTargetIndex];
+                    sf::Vector2f direction = targetPosition - currentPosition;
+                    float distance = abs(direction.x) + abs(direction.y);
+
+                    if (distance > speed * deltaTime.asSeconds())
+                    {
+                        direction /= distance; //Remove magnitude from Direction
+                        this->move(direction * speed * deltaTime.asSeconds()); //Move distance
+                        distanceTravl += speed * deltaTime.asSeconds(); //Update total distance traveled
+                    }
+                    else
+                    {
+                        this->setPosition(targetPosition); // Snap to the target position if close enough
+                        distanceTravl += distance; //Update total distance traveled
+                        ++currentTargetIndex; // Move to the next target
+                    }
+                }
             }
-            else
-            {
-                shape.setPosition(targetPosition); // Snap to the target position if close enough
-                ++currentTargetIndex; // Move to the next target
+            
+
+
+        //Death animations
+            if (currentHp <= 0 && died == 0) {
+                died = 1;
+                sf::Color newColor = sf::Color::Red;
+                newColor.a = 255;
+                this->updateColor(newColor);
+            }
+            else if (died == 1) {
+                if (diedT >= sf::milliseconds(100)) {
+                    died = 2;
+                }
+                else {
+                    diedT += deltaTime;
+                }
+            }
+    }
+
+    void Enemy::updateColor(sf::Color newColor) {
+        if ( !(newColor == color) ) {
+            for (int i = 0; i < vertices.getVertexCount(); i++) {
+                vertices[i].color = newColor;
+                color = newColor;
             }
         }
-        sf::Vector2f hpBarPos = shape.getPosition();
-
-        hpPer = currentHp / hp;
-        float newBarSize = barSize * hpPer;
-        hpShape.setSize({ newBarSize, 10.0f });
-        hpShape.setPosition(hpBarPos);
 
 
     }
 
-    sf::Vector2f Enemy::currentPos() {
-        return shape.getPosition();
+    sf::Vector2f Enemy::currentPos() const{
+        return this->getPosition();
     }
 
     float Enemy::distanced_Traveled() const {
@@ -79,17 +119,15 @@
     }
 
     void Enemy::updateHp(float damage, float heal) {
+        //Varaibles 
+            sf::Color newColor = color;
 
-        currentHp += -damage + heal;
-        if (hpPer > .75f) {
-            hpShape.setFillColor(sf::Color::Green);
-        }
-        else if (hpPer > .25f) {
-            hpShape.setFillColor(sf::Color::Yellow);
-        }
-        else {
-            hpShape.setFillColor(sf::Color::Red);
-        }
+        //Logic
+            currentHp += -damage + heal; //Deal any damages or heals from the call
+            hpPer = currentHp / hp; //Percetange of hp from total full
+        
+            newColor.a = 255 * hpPer; //Calculate a new Alpha value based on that Hp
+            this->updateColor(newColor); //update that color
 
     }
 
@@ -98,8 +136,8 @@
         return currentTargetIndex >= path.size();
     }
 
-    bool Enemy::dead() const {
-        return currentHp <= 0;
+    int Enemy::isDead() {
+        return died;
     }
 
     const sf::CircleShape& Enemy::getBody() const
