@@ -49,20 +49,6 @@
         }
     }
 
-    void Wave::debugEnemies(sf::Time deltaTime, std::vector<Enemy>& enemies, int& count, const std::vector<sf::Vector2f>& waypoints) {
-        health = 1000;
-        enemyCount = 1000;
-        money = 1000;
-        if (!(count >= enemyCount) && spawnDelay <= 0) {
-            enemies.emplace_back(waypoints, 100, 1000, 25, 1, sf::Color::White, 20);
-            count++;
-            spawnDelay = 0;
-        }
-        else {
-            spawnDelay -= static_cast<float>(deltaTime.asSeconds());
-        }
-    }
-
     void Wave::enemyWon(int damage) {
         enemyCount -= 1;
         health -= damage;
