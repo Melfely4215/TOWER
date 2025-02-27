@@ -213,7 +213,7 @@ int main()
             }
         }
 
-        waves.debugEnemies(deltaTime, enemies, count, waypoints);
+        waves.spawnEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
         // Update UI text
         float fps = 1.f / deltaTime.asSeconds();
