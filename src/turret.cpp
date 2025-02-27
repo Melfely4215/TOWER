@@ -5,8 +5,9 @@
 #include "enemy.h"
 
 
-    Turret::Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range)
-        : location(location), damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), hullColor(hullColor), 
+
+    Turret::Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range)
+        : path(path), location(location), damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), hullColor(hullColor), 
         shotColor(shotColor), cost(cost), aoeSize(aoeSize), range(range) {
         shot.setPrimitiveType(sf::PrimitiveType::LineStrip);
         shot.resize(2);
@@ -27,6 +28,7 @@
         shotAoe.setOutlineThickness(2.0f);
         shotAoe.setOrigin(shotAoe.getGeometricCenter());
         shotAoe.setPosition(sf::Vector2f(-200, -200));
+        rangeOptim = this->optimizeTargets();
 
         shot[0].position = location;
         shot[0].color = shotColor;
@@ -34,8 +36,8 @@
         shot[1].position = location;
     }
 
-    Turret::Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range, int ammo, float reloadDelay)
-        : location(location), damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), hullColor(hullColor), ammo(ammo), reloadDelay(reloadDelay),
+    Turret::Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range, int ammo, float reloadDelay)
+        : path(path), location(location), damage(damage), fireDelay(1 / shotsPerSec), pointsCount(pointsCount), hullColor(hullColor), ammo(ammo), reloadDelay(reloadDelay),
             shotColor(shotColor), cost(cost), aoeSize(aoeSize), range(range) {
             shot.setPrimitiveType(sf::PrimitiveType::LineStrip);
             shot.resize(2);
@@ -56,6 +58,7 @@
             shotAoe.setOutlineThickness(2.0f);
             shotAoe.setOrigin(shotAoe.getGeometricCenter());
             shotAoe.setPosition(sf::Vector2f(-200, -200));
+            rangeOptim = this->optimizeTargets();
 
             shot[0].position = location;
             shot[0].color = shotColor;
@@ -67,29 +70,29 @@
     void Turret::shoot(sf::Time deltaTime, std::vector<Enemy>& enemies) {
         if (lastShot >= fireDelay) {
             int bestEnemy = -1;
-            float currentBestDist = range + 1;
             int counter = 0;
             float longDistanceTravl = 0;
-            for (auto it = enemies.begin(); it != enemies.end();) {
+            float currentDistTravl;
+            for (auto it = enemies.begin(); it != enemies.end(); it++) {
 
                 if (it->isDead() == 0) {
-                    sf::Vector2f currentPosition = hull.getPosition();
-                    sf::Vector2f targetPosition = it->currentPos();
-                    sf::Vector2f direction = targetPosition - currentPosition;
-                    float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
-
-
-                    if (!(distance >= range) && it->distanced_Traveled() > longDistanceTravl) {
-                        currentBestDist = distance;
-                        longDistanceTravl = it->distanced_Traveled();
-                        bestEnemy = counter;
+                    currentDistTravl = it->distanced_Traveled();
+                    for (int i = 0; i < rangeOptim.size() - 1; i++ ) {
+                        
+                            if (rangeOptim[i] <= currentDistTravl && rangeOptim[i + 1] >= currentDistTravl) {
+                                if (currentDistTravl > longDistanceTravl) {
+                                    bestEnemy = counter;
+                                    longDistanceTravl = currentDistTravl;
+                                }
+                            }
+                        
+                        
                     }
+                    
                 }
                 counter++;
-                it++;
-
             }
-            if (currentBestDist <= range && !(bestEnemy == -1)) {
+            if (!(bestEnemy == -1)) {
                 lastShot = 0;
                 sf::Vector2f enemyLocation = enemies[bestEnemy].currentPos();
                 shot[1].position = enemyLocation;
@@ -132,6 +135,58 @@
         rangeDraw.setPosition(location);
 
     }
+
+    std::vector<float> Turret::optimizeTargets() {
+        std::vector<float> optimizeTargets; //Array of targets
+        int currentTargetIndex = 1; //Current Target Index
+        float distanceTotal = 0; //Total Distance Travelled
+        float distance; //Linear distance to a target
+        sf::Vector2f currentPos = path[0]; //Add up position.
+        bool swap = false; //Swap between in and out points.
+        sf::Vector2f targetPos;
+        sf::Vector2f direction;
+
+        float pathLengthDist; //Length of path chunk
+
+        pathLengthDist = abs(path[currentTargetIndex].x - path[currentTargetIndex - 1].x) + abs(path[currentTargetIndex].y - path[currentTargetIndex - 1].y); 
+
+
+        for (currentTargetIndex; currentTargetIndex < path.size(); currentTargetIndex++) {
+            for (int i = 1; i < pathLengthDist; i++) {
+                pathLengthDist = abs(path[currentTargetIndex].x - path[currentTargetIndex - 1].x) + abs(path[currentTargetIndex].y - path[currentTargetIndex - 1].y);
+                targetPos = path[currentTargetIndex]; //Target Pos of the path
+                direction = targetPos - currentPos; //Vector to path target
+                distance = abs(direction.x) + abs(direction.y); //Get the magnitude
+
+                if ((distance > 0)) {
+                    direction = direction / distance; //remove mag from direction
+                } 
+                currentPos += direction; //Add the direction to current location
+                distanceTotal += 1; //Add up the total
+
+
+                direction = currentPos - location; //Turret to Current test location
+                distance = abs(direction.x) + abs(direction.y); //Get magnitude
+
+                if (!(distance >= range) && swap == false) { 
+                    optimizeTargets.push_back(distanceTotal); //Add the point entering us into range
+                    swap = true;
+
+                }
+                else if ((distance >= range && swap == true)) {
+                    optimizeTargets.push_back(distanceTotal - 1); //Add the point leaving the part of range
+                    swap = false;
+
+                }
+
+            }
+        }
+        
+        return optimizeTargets;
+    }
+    
+
+    
 
     const sf::CircleShape& Turret::getHull() const { return hull; }
 

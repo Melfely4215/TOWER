@@ -4,8 +4,8 @@
 
 
 //Turrets
-    Basic_Turret::Basic_Turret(sf::Vector2f location)
-        : Turret(location,
+    Basic_Turret::Basic_Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location)
+        : Turret(path, location,
             25,              // damage
             4.0f,            // shotsPerSec
             3,               // pointsCount
@@ -16,8 +16,8 @@
             200.0f            // range
         ) {}
 
-    Empty_Turret::Empty_Turret(sf::Vector2f location)
-        : Turret(location,
+    Empty_Turret::Empty_Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location)
+        : Turret(path, location,
             0,              // damage
             0.0f,            // shotsPerSec
             0,               // pointsCount
@@ -28,8 +28,8 @@
             0.0f            // range
         ) {}
 
-    Bomb_Turret::Bomb_Turret(sf::Vector2f location)
-        : Turret(location,
+    Bomb_Turret::Bomb_Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location)
+        : Turret(path, location,
             50,              // damage
             0.5f,            // shotsPerSec
             5,               // pointsCount

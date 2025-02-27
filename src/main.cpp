@@ -54,11 +54,11 @@ void placeTurret(std::vector<Turret>& turrets, Wave& waves, Turret turret ) {
     }
 }
 
-void keyboardInputs(std::vector<Turret>& turrets, sf::RenderWindow& window, Wave& waves, const std::optional<sf::Event>& event, Turret& prevTurret){
+void keyboardInputs(const std::vector<sf::Vector2f>& path, std::vector<Turret>& turrets, sf::RenderWindow& window, Wave& waves, const std::optional<sf::Event>& event, Turret& prevTurret){
     
-    static Basic_Turret basicTurret = {sf::Vector2f(0,0)};
-    static Empty_Turret emptyTurret = {sf::Vector2f(0,0)};
-    static Bomb_Turret bombTurret = {sf::Vector2f(0,0)};
+    static Basic_Turret basicTurret = {path, sf::Vector2f(0,0)};
+    static Empty_Turret emptyTurret = {path, sf::Vector2f(0,0)};
+    static Bomb_Turret bombTurret = {path, sf::Vector2f(0,0)};
     
     static const sf::Vector2f emptyLoc = {0,0};
     
@@ -68,7 +68,7 @@ void keyboardInputs(std::vector<Turret>& turrets, sf::RenderWindow& window, Wave
     }
     else if (event->is<sf::Event::KeyReleased>() && event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Num1) {
         prevTurret.updateTurret(emptyLoc, emptyTurret);
-        Basic_Turret builtTurret = { mousePosGet(window) };
+        Basic_Turret builtTurret = {path, mousePosGet(window) };
         placeTurret(turrets, waves, builtTurret);
     }
 
@@ -77,7 +77,7 @@ void keyboardInputs(std::vector<Turret>& turrets, sf::RenderWindow& window, Wave
     }
     else if (event->is<sf::Event::KeyReleased>() && event->getIf<sf::Event::KeyReleased>()->code == sf::Keyboard::Key::Num2) {
         prevTurret.updateTurret(emptyLoc, emptyTurret);
-        Bomb_Turret builtTurret = { mousePosGet(window) };
+        Bomb_Turret builtTurret = {path, mousePosGet(window) };
         placeTurret(turrets, waves, builtTurret);
     }
 
@@ -95,7 +95,7 @@ int main()
         sf::Vector2 windowSize = window.getSize();
         std::vector<Enemy> enemies; //List of enemies
         std::vector<Turret> turrets; //List of turrets
-        Turret prevTurret = {sf::Vector2f(0,0), 0, 0.0f, 0, sf::Color::Transparent, sf::Color::Transparent, 0.0f, 0, 0};
+        
         int count = 0; //Total Enemy Count
 
     // Define waypoints for the path
@@ -108,7 +108,7 @@ int main()
             {windowSize.x * 1.0f, windowSize.y * 0.80f},
         
         };
-
+        Turret prevTurret = {waypoints, sf::Vector2f(0,0), 0, 0.0f, 0, sf::Color::Transparent, sf::Color::Transparent, 0.0f, 0, 0 }; //Prev turret
     // Set initial position of the enemy at the start of the path
     
     // Create a vertex array for the path
@@ -177,7 +177,7 @@ int main()
                     }
                 }
 
-                keyboardInputs(turrets, window, waves, event, prevTurret);
+                keyboardInputs(waypoints, turrets, window, waves, event, prevTurret);
                 
             }
 

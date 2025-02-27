@@ -8,21 +8,21 @@
 //Turrets 
     class Basic_Turret : public Turret {
     public:
-        Basic_Turret(sf::Vector2f location);
+        Basic_Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location);
 
 
     };
 
     class Empty_Turret : public Turret {
     public:
-        Empty_Turret(sf::Vector2f location);
+        Empty_Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location);
 
 
     };
 
     class Bomb_Turret : public Turret {
     public:
-        Bomb_Turret(sf::Vector2f location);
+        Bomb_Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location);
     };
 
 //Enemies

@@ -17,7 +17,6 @@ private:
     std::size_t currentTargetIndex;
     float size; //Size of Enemy
     float hp; //Starting Hp
-    float barSize = size * 1.5; //Size of Hp Bar
     float hpPer = 1; //HP Percent
     float currentHp;
     int value; //Value of enemy on death

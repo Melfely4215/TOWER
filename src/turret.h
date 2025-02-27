@@ -9,15 +9,17 @@
 class Turret {
 private:
     //Turret Stats
-    int damage;
-    float fireDelay;
-    float lastShot = -1;
-    int pointsCount;
-    int ammo = -1;
-    float reloadDelay = 0;
-    int cost;
-    float aoeSize;
-    float range;
+    int damage; //Damage of each shot
+    float fireDelay; //Delay between each shot
+    float lastShot = -1; //How long since last shot
+    int pointsCount; //Number of sides to shape min of 3
+    int ammo = -1; //total ammo
+    float reloadDelay = 0; //Reload time
+    int cost; //Cost of turret
+    float aoeSize; //Size of aoe attack
+    float range; //Attack range
+    std::vector<float> rangeOptim; //Dynamiclly allocated array of valid attack locations;
+    const std::vector<sf::Vector2f> path; //The path enemies will follow for range optimization
 
     //Rendering Data
     sf::CircleShape rangeDraw;
@@ -30,12 +32,14 @@ private:
 
 public:
 
-    Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range);
-    Turret(sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range, int ammo, float reloadDelay);
+    Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range);
+    Turret(const std::vector<sf::Vector2f>& path, sf::Vector2f location, int damage, float shotsPerSec, int pointsCount, sf::Color hullColor, sf::Color shotColor, float aoeSize, int cost, float range, int ammo, float reloadDelay);
 
     void shoot(sf::Time deltaTime, std::vector<Enemy>& enemies);
 
     void updateTurret(sf::Vector2f location, Turret turret);
+
+    std::vector<float> optimizeTargets();
 
     const sf::CircleShape& getHull() const;
 
