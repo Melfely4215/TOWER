@@ -73,12 +73,14 @@ void Turret::shoot(sf::Time deltaTime, std::vector<Enemy>& enemies) {
         int counter = 0;
         float longDistanceTravl = 0;
         float currentDistTravl;
+
         for (auto it = enemies.begin(); it != enemies.end(); it++) { //For each enemy
 
             if (it->isDead() == 0) { //Make sure its still alive
                 currentDistTravl = it->distanced_Traveled();//Find enemy travel distance
                 for (int i = 0; i < rangeOptim.size() - 1; i = i + 2 ) { //For the number of stored attack pairs
                         
+
                         if (rangeOptim[i] <= currentDistTravl && rangeOptim[i + 1] >= currentDistTravl) { //Make sure enemy is inside attack pair
                             if (currentDistTravl > longDistanceTravl) { //Make sure its the furtherst along within range
                                 bestEnemy = counter; //Set enemy ID
