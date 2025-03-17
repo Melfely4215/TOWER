@@ -32,8 +32,6 @@ public:
 
     void spawnEnemies(sf::Time deltaTime, std::vector<Enemy>& enemies, int& count, const std::vector<sf::Vector2f>& waypoints);
 
-    void debugEnemies(sf::Time deltaTime, std::vector<Enemy>& enemies, int& count, const std::vector<sf::Vector2f>& waypoints);
-
     void enemyDied(int reward);
 
     void spendMoney(int spentAmount);

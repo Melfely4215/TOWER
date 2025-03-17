@@ -72,17 +72,18 @@
             float longDistanceTravl = 0;
             for (auto it = enemies.begin(); it != enemies.end();) {
 
+                if (it->isDead() == 0) {
+                    sf::Vector2f currentPosition = hull.getPosition();
+                    sf::Vector2f targetPosition = it->currentPos();
+                    sf::Vector2f direction = targetPosition - currentPosition;
+                    float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
 
-                sf::Vector2f currentPosition = hull.getPosition();
-                sf::Vector2f targetPosition = it->currentPos();
-                sf::Vector2f direction = targetPosition - currentPosition;
-                float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
 
-
-                if (!(distance >= range) && it->distanced_Traveled() > longDistanceTravl) {
-                    currentBestDist = distance;
-                    longDistanceTravl = it->distanced_Traveled();
-                    bestEnemy = counter;
+                    if (!(distance >= range) && it->distanced_Traveled() > longDistanceTravl) {
+                        currentBestDist = distance;
+                        longDistanceTravl = it->distanced_Traveled();
+                        bestEnemy = counter;
+                    }
                 }
                 counter++;
                 it++;
