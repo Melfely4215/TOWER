@@ -89,7 +89,7 @@ int main()
     //Initialzation
         std::srand(time(0));
         Wave waves;
-        sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Tower Defense Game");
+        sf::RenderWindow window(sf::VideoMode({ 1280, 720 }), "Tower Defense Game");
         window.setVerticalSyncEnabled(false); // Enable V-Sync
         //window.setFramerateLimit(60);
         sf::Vector2 windowSize = window.getSize();
