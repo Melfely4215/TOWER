@@ -8,6 +8,7 @@
 #include "turret.h"
 #include "wave.h"
 #include "types.h"
+#include <omp.h>
 
 #define SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
@@ -98,6 +99,10 @@ int main()
         Turret prevTurret = {sf::Vector2f(0,0), 0, 0.0f, 0, sf::Color::Transparent, sf::Color::Transparent, 0.0f, 0, 0};
         int count = 0; //Total Enemy Count
 
+        //Debug Timing Information
+        sf::Time debugTime;
+        sf::Clock debugClock;
+
     // Define waypoints for the path
         std::vector<sf::Vector2f> waypoints = {
             {0.f,  windowSize.y * 0.10f },
@@ -184,13 +189,16 @@ int main()
         }
         
         
-
+        debugClock.restart();
         for (auto turret = turrets.begin(); turret != turrets.end();) {
             turret->shoot(deltaTime, enemies);
             turret++;
         }
         
-        // Check if any enemy has reached the end of the path and remove them
+        debugTime = debugClock.restart();
+        std::cout << "Turret Targeting Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+        
+        debugClock.restart();
         for (auto it = enemies.begin(); it != enemies.end();)
         {
             it->update(deltaTime);
@@ -212,6 +220,8 @@ int main()
                 ++it; // Move to the next enemy
             }
         }
+        debugTime = debugClock.restart();
+        std::cout << "Enemy Update Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
 
         waves.debugEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
@@ -234,9 +244,13 @@ int main()
             drawAttack = false;
         }
 
-        for (const auto& enemy : enemies) {
-            window.draw(enemy);
+        debugClock.restart();
+        for (int index = 0; index < enemies.size(); index++) {
+            window.draw(enemies[index]);
         }
+        debugTime = debugClock.restart();
+        std::cout << "Enemy Draw Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+
 
         //Draw Turrets
         for (const auto& turret : turrets) {
