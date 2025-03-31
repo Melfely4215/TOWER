@@ -94,8 +94,10 @@
                 float moveDistanceY = direction.y * speed * deltaTime.asSeconds();
                 //this->move(direction * speed * deltaTime.asSeconds());
                 for (int i = 0; i < vertices.getVertexCount(); i++) {
-                    sf::Vertex currentVer = vertices[i];
-                    sf::Vector2f = currentVer.position;
+                    sf::Vector2f currentPos = vertices[i].position;
+                    currentPos.x += moveDistanceX;
+                    currentPos.y += moveDistanceY;
+                    vertices[i].position = currentPos;
 
                 }
                 distanceTravl += speed * deltaTime.asSeconds();

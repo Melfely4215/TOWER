@@ -100,6 +100,10 @@ int main()
         Turret prevTurret = {sf::Vector2f(0,0), 0, 0.0f, 0, sf::Color::Transparent, sf::Color::Transparent, 0.0f, 0, 0};
         int count = 0; //Total Enemy Count
 
+        //Time Debug
+        sf::Time debugTime;
+        sf::Clock debugClock;
+
     // Define waypoints for the path
         std::vector<sf::Vector2f> waypoints = {
             {0.f,  windowSize.y * 0.10f },
@@ -193,7 +197,9 @@ int main()
         }
         
         // Check if any enemy has reached the end of the path and remove them
+        debugClock.restart();
         bodies.clear();
+        
         for (auto it = enemies.begin(); it != enemies.end();)
         {
             it->update(deltaTime);
@@ -220,8 +226,8 @@ int main()
                 ++it; // Move to the next enemy
             }
         }
-
-
+        debugTime = debugClock.restart();
+        std::cout << "Enemy Update Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
         waves.debugEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
         // Update UI text
@@ -247,7 +253,11 @@ int main()
             /*for (const auto& enemy : enemies) {
                 window.draw(enemy);
             }*/
+            
+            debugClock.restart();
             window.draw(bodies);
+            debugTime = debugClock.restart();
+            std::cout << "Enemy Draw Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
 
         //Draw Turrets
             for (const auto& turret : turrets) {
