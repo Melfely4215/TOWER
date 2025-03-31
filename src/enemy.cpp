@@ -3,6 +3,7 @@
 #include <vector>
 #include "enemy.h"
 #include <cmath>
+#include <algorithm>
 
 
     //Class Data
@@ -92,7 +93,7 @@
                 direction /= distance;
                 float moveDistanceX = direction.x * speed * deltaTime.asSeconds();
                 float moveDistanceY = direction.y * speed * deltaTime.asSeconds();
-                //this->move(direction * speed * deltaTime.asSeconds());
+                this->move(direction * speed * deltaTime.asSeconds());
                 for (int i = 0; i < vertices.getVertexCount(); i++) {
                     sf::Vector2f currentPos = vertices[i].position;
                     currentPos.x += moveDistanceX;

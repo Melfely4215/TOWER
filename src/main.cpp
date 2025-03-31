@@ -8,6 +8,7 @@
 #include "turret.h"
 #include "wave.h"
 #include "types.h"
+#include "omp.h"
 
 #define SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
@@ -196,18 +197,22 @@ int main()
             turret++;
         }
         
-        // Check if any enemy has reached the end of the path and remove them
+        
+        debugClock.restart();
+#pragma omp parallel for
+        for (int index = 0; index < enemies.size(); index++) {
+            enemies[index].update(deltaTime);
+        }
+        debugTime = debugClock.restart();
+        std::cout << "Enemy Update Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+
         debugClock.restart();
         bodies.clear();
-        
         for (auto it = enemies.begin(); it != enemies.end();)
         {
-            it->update(deltaTime);
+            
 
-            sf::VertexArray verticies = it->getBody();
-            for (auto point = 0; point < it->getBody().getVertexCount(); point++) {
-                bodies.append(verticies[point]);
-            }
+            
             
             if (it->dead() ) {
                 waves.enemyDied(it->enemyValue());
@@ -227,7 +232,31 @@ int main()
             }
         }
         debugTime = debugClock.restart();
-        std::cout << "Enemy Update Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+        std::cout << "Enemy Delete Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+        
+        debugClock.restart();
+        int bSize;
+        if (enemies.size() > 0) {
+            bSize = enemies[0].getBody().getVertexCount();
+            bodies.resize(bSize * enemies.size());
+            #pragma omp parallel for
+            for (int index = 0; index < enemies.size(); index++) {
+                sf::VertexArray verticies = enemies[index].getBody();
+                for (int point = ((bSize - 1) * index); point < ((bSize - 1) * index) + (bSize - 1); point++) {
+                    bodies[point] = (verticies[(point - ((bSize - 1) * index))]);
+                }
+            }
+        }
+        else {
+            bSize = 0;
+        }
+        
+
+        
+
+        debugTime = debugClock.restart();
+        std::cout << "Enemy Bodies Build Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+        
         waves.debugEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
         // Update UI text
