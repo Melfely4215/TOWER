@@ -33,23 +33,22 @@
         : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value), color(color), points(points)
     {
         vertices.append(sf::Vertex{ {path[0]}, color });
-        for (int i = 0; i <= points; ++i) {
+        for (int i = 0; i <= points;) {
             float angle = i * 2 * M_PI / points;
             float x = path[0].x + size * std::cos(angle);
             float y = path[0].y + size * std::sin(angle);
 
             switch (count) {
             case 0:
-                vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
-                count++;
-                break;
             case 1:
                 vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
                 count++;
+                i++;
                 break;
             case 2:
                 vertices.append(sf::Vertex{ {sf::Vector2f(path[0].x, path[0].y)}, color });
                 count = 0;
+                i--;
                 break;
 
             }
