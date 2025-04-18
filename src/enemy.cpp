@@ -32,7 +32,7 @@
     Enemy::Enemy(const std::vector<sf::Vector2f>& path, float speed, float hpTotal, float size, int value, sf::Color color, int points)
         : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value), color(color), points(points)
     {
-        vertices.append(sf::Vertex{ {path[0]}, color });
+        //vertices.append(sf::Vertex{ {path[0]}, color });
         for (int i = 0; i <= points;) {
             float angle = i * 2 * M_PI / points;
             float x = path[0].x + size * std::cos(angle);
@@ -54,6 +54,7 @@
             }
 
         }
+
         vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
         this->setOrigin(path[0]);
         this->setPosition(path[0]);

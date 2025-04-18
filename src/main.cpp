@@ -250,10 +250,6 @@ int main()
         else {
             bSize = 0;
         }
-        
-
-        
-
         debugTime = debugClock.restart();
         std::cout << "Enemy Bodies Build Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
         
