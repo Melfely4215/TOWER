@@ -3,6 +3,7 @@
 #include <vector>
 #include "enemy.h"
 #include <cmath>
+#include <algorithm>
 
 
     //Class Data
@@ -32,30 +33,30 @@
         : path(path), speed(speed), currentTargetIndex(1), hp(hpTotal), size(size), value(value), color(color), points(points)
     {
         vertices.append(sf::Vertex{ {path[0]}, color });
-        for (int i = 0; i <= points; ++i) {
-            float angle = i * 2 * M_PI / (points);
+        for (int i = 0; i <= points;) {
+            float angle = i * 2 * M_PI / points;
             float x = path[0].x + size * std::cos(angle);
             float y = path[0].y + size * std::sin(angle);
 
             switch (count) {
             case 0:
-                vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
-                count++;
-                break;
             case 1:
                 vertices.append(sf::Vertex{ {sf::Vector2f(x, y)}, color });
                 count++;
+                i++;
                 break;
             case 2:
                 vertices.append(sf::Vertex{ {sf::Vector2f(path[0].x, path[0].y)}, color });
                 count = 0;
-                i = i - 2;
+                i--;
                 break;
 
             }
 
         }
         vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
+        this->setOrigin(path[0]);
+        this->setPosition(path[0]);
         currentHp = hp;
         hpShape.setOutlineColor(sf::Color::Black);
         hpShape.setOutlineThickness(2.0f);
@@ -81,37 +82,29 @@
     {
         if (currentTargetIndex < path.size())
         {
-            sf::Vector2f currentPosition = vertices[0].position;
+            sf::Vector2f currentPosition = this->getPosition();
             sf::Vector2f targetPosition = path[currentTargetIndex];
             sf::Vector2f direction = targetPosition - currentPosition;
             float distance = abs(direction.x) + abs(direction.y);
 
-            
-
             if (distance > speed * deltaTime.asSeconds())
             {
                 direction /= distance;
+                float moveDistanceX = direction.x * speed * deltaTime.asSeconds();
+                float moveDistanceY = direction.y * speed * deltaTime.asSeconds();
+                this->move(direction * speed * deltaTime.asSeconds());
                 for (int i = 0; i < vertices.getVertexCount(); i++) {
-                    sf::Vertex currentVer = vertices[i];
-                    sf::Vector2f location = currentVer.position;
-                    location = location + (direction * speed * deltaTime.asSeconds());
-                    
-                    vertices[i].position = location;
+                    sf::Vector2f currentPos = vertices[i].position;
+                    currentPos.x += moveDistanceX;
+                    currentPos.y += moveDistanceY;
+                    vertices[i].position = currentPos;
 
                 }
                 distanceTravl += speed * deltaTime.asSeconds();
             }
             else
             {
-                for (int i = 0; i < vertices.getVertexCount(); i++) {
-                    sf::Vertex currentVer = vertices[i];
-                    sf::Vector2f location = currentVer.position;
-                    sf::Vector2f centerDif = location - vertices[0].position;
-                    location = targetPosition + centerDif;
-
-                    vertices[i].position = location;
-
-                }
+                this->setPosition(targetPosition); // Snap to the target position if close enough
                 ++currentTargetIndex; // Move to the next target
             }
         }
@@ -126,7 +119,7 @@
     }
 
     sf::Vector2f Enemy::currentPos() const{
-        return vertices[0].position;
+        return this->getPosition();
     }
 
     float Enemy::distanced_Traveled() const {

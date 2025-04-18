@@ -8,7 +8,7 @@
 #include "turret.h"
 #include "wave.h"
 #include "types.h"
-#include <thread>
+#include "omp.h"
 
 #define SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
@@ -82,6 +82,7 @@ void keyboardInputs(std::vector<Turret>& turrets, sf::RenderWindow& window, Wave
         placeTurret(turrets, waves, builtTurret);
     }
 
+
 }
 
 int main()
@@ -99,6 +100,10 @@ int main()
         bodies.setPrimitiveType(sf::PrimitiveType::Triangles);
         Turret prevTurret = {sf::Vector2f(0,0), 0, 0.0f, 0, sf::Color::Transparent, sf::Color::Transparent, 0.0f, 0, 0};
         int count = 0; //Total Enemy Count
+
+        //Time Debug
+        sf::Time debugTime;
+        sf::Clock debugClock;
 
     // Define waypoints for the path
         std::vector<sf::Vector2f> waypoints = {
@@ -191,18 +196,23 @@ int main()
             turret->shoot(deltaTime, enemies);
             turret++;
         }
-
         
+        
+        debugClock.restart();
+#pragma omp parallel for
+        for (int index = 0; index < enemies.size(); index++) {
+            enemies[index].update(deltaTime);
+        }
+        debugTime = debugClock.restart();
+        std::cout << "Enemy Update Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
 
-        // Check if any enemy has reached the end of the path and remove them
+        debugClock.restart();
+        bodies.clear();
         for (auto it = enemies.begin(); it != enemies.end();)
         {
-            it->update(deltaTime);
+            
 
-            sf::VertexArray verticies = it->getBody();
-            for (auto point = 0; point < verticies.getVertexCount(); point++) {
-                bodies.append(verticies[point]);
-            }
+            
             
             if (it->dead() ) {
                 waves.enemyDied(it->enemyValue());
@@ -221,16 +231,40 @@ int main()
                 ++it; // Move to the next enemy
             }
         }
+        debugTime = debugClock.restart();
+        std::cout << "Enemy Delete Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+        
+        debugClock.restart();
+        int bSize;
+        if (enemies.size() > 0) {
+            bSize = enemies[0].getBody().getVertexCount();
+            bodies.resize(bSize * enemies.size());
+            #pragma omp parallel for
+            for (int index = 0; index < enemies.size(); index++) {
+                sf::VertexArray verticies = enemies[index].getBody();
+                for (int point = ((bSize - 1) * index); point < ((bSize - 1) * index) + (bSize - 1); point++) {
+                    bodies[point] = (verticies[(point - ((bSize - 1) * index))]);
+                }
+            }
+        }
+        else {
+            bSize = 0;
+        }
+        
 
+        
 
+        debugTime = debugClock.restart();
+        std::cout << "Enemy Bodies Build Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+        
         waves.debugEnemies(deltaTime, enemies, count, waypoints);
         waves.updateInfo(deltaTime);
         // Update UI text
-            float fps = 1.f / deltaTime.asSeconds();
-            framerateText.setString("FPS: " + std::to_string(static_cast<int>(fps)) );
-            waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count())
-                + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth()) + " Turrets: " + std::to_string(turrets.size())
-            );
+        float fps = 1.f / deltaTime.asSeconds();
+        framerateText.setString("FPS: " + std::to_string(static_cast<int>(fps)) );
+        waveInfo.setString("Wave: " + std::to_string(waves.wave_Id()) + " Enemies Left: " + std::to_string(waves.enemy_Count())
+            + " Money: $" + std::to_string(waves.returnMoney()) + " Health: " + std::to_string(waves.returnHealth()) + " Turrets: " + std::to_string(turrets.size())
+        );
 
         // Clear the screen
             window.clear();
@@ -243,10 +277,17 @@ int main()
             window.draw(attackCircle);
             drawAttack = false;
         }
-            
-            window.draw(bodies);
 
-            bodies.clear(); //Clear bodies once it has been drawn
+        //Draw Enemies
+            /*for (const auto& enemy : enemies) {
+                window.draw(enemy);
+            }*/
+            
+            debugClock.restart();
+            window.draw(bodies);
+            debugTime = debugClock.restart();
+            std::cout << "Enemy Draw Time: " << debugTime.asMilliseconds() << "ms" << std::endl;
+
         //Draw Turrets
             for (const auto& turret : turrets) {
                 window.draw(turret.getHull());
